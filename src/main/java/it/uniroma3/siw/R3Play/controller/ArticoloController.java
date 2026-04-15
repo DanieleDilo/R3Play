@@ -1,6 +1,7 @@
 package it.uniroma3.siw.R3Play.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,8 +18,13 @@ import java.nio.file.Paths;
 
 import it.uniroma3.siw.R3Play.model.Articolo;
 import it.uniroma3.siw.R3Play.model.Recensione;
+import it.uniroma3.siw.R3Play.model.Utente;
 import it.uniroma3.siw.R3Play.repository.ArticoloRepository;
 import it.uniroma3.siw.R3Play.repository.RecensioneRepository;
+import it.uniroma3.siw.R3Play.repository.UserRepository;
+// Import fondamentali per l'autenticazione OAuth2
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 @Controller
 public class ArticoloController {
@@ -29,6 +35,8 @@ public class ArticoloController {
     @Autowired
     private RecensioneRepository recensioneRepository;
 
+    @Autowired
+    private UserRepository userRepository;
     // ==========================================
     // 1. VETRINA (Daniele - Read 1)
     // ==========================================
@@ -105,23 +113,40 @@ public class ArticoloController {
         return "dettaglio-articolo"; 
     }
 
-   // ==========================================
-    // 5. AGGIUNGI RECENSIONE (Mattia - Insert)
+  // ==========================================
+    // 5. AGGIUNGI RECENSIONE (Collegata a Google!)
     // ==========================================
-    @PostMapping("/articolo/{idArticolo}/recensione") // <-- RINOMINATO IN idArticolo
+    @PostMapping("/articolo/{idArticolo}/recensione")
     public String aggiungiRecensione(@PathVariable("idArticolo") Long idArticolo, 
-                                     @ModelAttribute("recensione") Recensione recensione) {
+                                     @ModelAttribute("recensione") Recensione recensione,
+                                     @AuthenticationPrincipal OAuth2User principal) {
         
-        // 1. Cerchiamo l'articolo usando idArticolo
         Articolo articolo = this.articoloRepository.findById(idArticolo).orElse(null);
         
-        if (articolo != null) {
-            // 2. TRUCCO FONDAMENTALE: Diciamo a Spring che questa è una NUOVA recensione 
-            // annullando qualsiasi ID che ha provato a inserire per sbaglio.
-            recensione.setId(null); 
+        // Se l'articolo esiste e l'utente è loggato con Google
+        if (articolo != null && principal != null) {
             
-            // 3. Colleghiamo la recensione all'articolo
+            // Prendiamo la mail di Google
+            String email = principal.getAttribute("email");
+            String nome = principal.getAttribute("given_name");
+            String cognome = principal.getAttribute("family_name");
+
+            // Cerchiamo l'utente usando il TUO UserRepository
+            Utente autore = this.userRepository.findByEmail(email).orElse(null);
+            
+            // Se è la prima volta che entra, lo creiamo!
+            if (autore == null) {
+                autore = new Utente();
+                autore.setEmail(email);
+                autore.setNome(nome);
+                autore.setCognome(cognome);
+                this.userRepository.save(autore);
+            }
+
+            // Assegniamo il vero autore alla recensione
+            recensione.setId(null); 
             recensione.setArticolo(articolo);
+            recensione.setAutore(autore); 
             
             try {
                 this.recensioneRepository.save(recensione);

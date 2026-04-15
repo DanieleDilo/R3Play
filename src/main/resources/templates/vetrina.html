@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <title>Vetrina - R3Play</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; text-align: center; }
-        h1 { color: #6DB33F; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0 0 20px 0; text-align: center; }
+        h1 { color: #6DB33F; margin-top: 20px; }
         .header-actions { margin-bottom: 30px; }
         .btn-nuovo { padding: 10px 20px; background-color: #6DB33F; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
         .btn-nuovo:hover { background-color: #5aa032; }
         
         /* Griglia per gli articoli */
-        .griglia-articoli { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+        .griglia-articoli { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; padding: 0 20px; }
         
         /* Stile della singola "Card" */
         .card-articolo { background: white; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 250px; overflow: hidden; text-align: left; transition: transform 0.2s;}
@@ -23,10 +23,29 @@
         .card-desc { font-size: 0.9em; color: #666; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .btn-modifica { display: block; text-align: center; margin-top: 10px; padding: 8px; background-color: #f0ad4e; color: white; text-decoration: none; border-radius: 5px; font-size: 0.9em; font-weight: bold; }
         .btn-modifica:hover { background-color: #ec971f; }
+        
+        /* Stile per la barra superiore di Login */
+        .login-bar { text-align: right; padding: 15px 30px; background-color: #ffffff; border-bottom: 1px solid #ddd; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
 
+    <div class="login-bar">
+        <div th:if="${#authentication.name == 'anonymousUser'}">
+            <a th:href="@{/oauth2/authorization/google}" style="background: #4285F4; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                🔵 Accedi con Google
+            </a>
+        </div>
+
+        <div th:if="${#authentication.name != 'anonymousUser'}">
+            <span style="font-size: 1.1em; margin-right: 15px;">
+                Ciao, <strong th:text="${#authentication.principal.attributes['name']}">Utente</strong>!
+            </span>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <button type="submit" style="background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">Esci</button>
+            </form>
+        </div>
+    </div>
     <h1>Benvenuto in R3Play 🚀</h1>
     <div class="header-actions">
         <a th:href="@{/articolo/nuovo}" class="btn-nuovo">+ Vendi un Articolo</a>
@@ -44,7 +63,7 @@
                 <p class="card-desc" th:text="${articolo.descrizione}">Descrizione breve...</p>
                 <p class="card-prezzo" th:text="${articolo.prezzo} + ' €'">0.00 €</p>
                 <a th:href="@{'/articolo/modifica/' + ${articolo.id}}" class="btn-modifica">✏️ Modifica</a>
-                <a th:href="@{'/articolo/' + ${articolo.id}}">Visualizza Dettaglio</a>
+                <a th:href="@{'/articolo/' + ${articolo.id}}" style="display: block; text-align: center; margin-top: 10px; color: #007bff; text-decoration: none;">Visualizza Dettaglio</a>
             </div>
         </div>
 
