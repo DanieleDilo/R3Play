@@ -73,7 +73,7 @@
                 
                 <div class="seller-info">
                    <strong>Venditore:</strong> 
-                   <span th:text="${articolo.venditore != null ? articolo.venditore.nome : 'Utente R3Play'}">Nome Venditore</span>
+                   <span th:text="${articolo.venditore != null ? articolo.venditore.nome + ' ' + articolo.venditore.cognome : 'Utente R3Play'}">Nome Venditore</span>
                 </div>
                 
                 <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">

@@ -1,6 +1,7 @@
 package it.uniroma3.siw.R3Play.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,9 +23,6 @@ import it.uniroma3.siw.R3Play.model.Utente;
 import it.uniroma3.siw.R3Play.repository.ArticoloRepository;
 import it.uniroma3.siw.R3Play.repository.RecensioneRepository;
 import it.uniroma3.siw.R3Play.repository.UserRepository;
-// Import fondamentali per l'autenticazione OAuth2
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 
 @Controller
 public class ArticoloController {
@@ -37,6 +35,7 @@ public class ArticoloController {
 
     @Autowired
     private UserRepository userRepository;
+
     // ==========================================
     // 1. VETRINA (Daniele - Read 1)
     // ==========================================
@@ -48,7 +47,7 @@ public class ArticoloController {
     }
 
     // ==========================================
-    // 2. NUOVO ARTICOLO (Daniele - Insert)
+    // 2. NUOVO ARTICOLO (Insert + Immagine + Venditore)
     // ==========================================
     @GetMapping("/articolo/nuovo")
     public String mostraFormNuovoArticolo(Model model) {
@@ -58,7 +57,26 @@ public class ArticoloController {
 
     @PostMapping("/articolo/nuovo")
     public String salvaNuovoArticolo(@ModelAttribute("articolo") Articolo articolo, 
-                                     @RequestParam("fileImmagine") MultipartFile immagine) {
+                                     @RequestParam("fileImmagine") MultipartFile immagine,
+                                     @AuthenticationPrincipal OAuth2User principal) { // <-- Prende chi è loggato
+        
+        // A. Gestione Utente Google (Venditore)
+        if (principal != null) {
+            String email = principal.getAttribute("email");
+            Utente venditore = this.userRepository.findByEmail(email).orElse(null);
+            
+            // Se l'utente non esiste ancora nel DB, lo creiamo
+            if (venditore == null) {
+                venditore = new Utente();
+                venditore.setEmail(email);
+                venditore.setNome(principal.getAttribute("given_name"));
+                venditore.setCognome(principal.getAttribute("family_name"));
+                this.userRepository.save(venditore);
+            }
+            articolo.setVenditore(venditore); // Assegna il venditore!
+        }
+
+        // B. Gestione Immagine
         try {
             if (!immagine.isEmpty()) {
                 String uploadDir = "src/main/resources/static/uploads/";
@@ -72,49 +90,71 @@ public class ArticoloController {
                 articolo.setUrlFoto("/uploads/" + fileName);
             }
         } catch (IOException e) {
-            System.out.println("Errore durante il salvataggio dell'immagine!");
-            e.printStackTrace();
+            System.out.println("Errore salvataggio immagine: " + e.getMessage());
         }
+
+        // C. Salvataggio finale
         this.articoloRepository.save(articolo);
         return "redirect:/"; 
     }
 
     // ==========================================
-    // 3. MODIFICA ARTICOLO (Daniele - Update)
+    // 3. MODIFICA ARTICOLO (Solo se sei il venditore!)
     // ==========================================
     @GetMapping("/articolo/modifica/{id}")
-    public String mostraFormModifica(@PathVariable("id") Long id, Model model) {
-        Articolo articoloDaModificare = this.articoloRepository.findById(id).orElse(null);
-        model.addAttribute("articolo", articoloDaModificare);
-        return "modifica-articolo";
+    public String mostraFormModifica(@PathVariable("id") Long id, Model model,
+                                     @AuthenticationPrincipal OAuth2User principal) { // <-- Controllo Sicurezza
+        
+        Articolo articolo = this.articoloRepository.findById(id).orElse(null);
+        
+        if (articolo == null || principal == null) return "redirect:/";
+
+        String emailLoggata = principal.getAttribute("email");
+        
+        // Verifica che chi tenta di modificare sia il vero venditore
+        if (articolo.getVenditore() != null && emailLoggata.equals(articolo.getVenditore().getEmail())) {
+            model.addAttribute("articolo", articolo);
+            return "modifica-articolo";
+        }
+        
+        return "redirect:/"; // Se furbetto, torna alla home
     }
 
+    // Metodo per salvare effettivamente le modifiche dell'articolo
     @PostMapping("/articolo/modifica/{id}")
-    public String salvaModificaArticolo(@ModelAttribute("articolo") Articolo articolo) {
-        this.articoloRepository.save(articolo);
+    public String salvaModificaArticolo(@PathVariable("id") Long id, 
+                                        @ModelAttribute("articolo") Articolo articoloModificato,
+                                        @AuthenticationPrincipal OAuth2User principal) {
+        Articolo articoloEsistente = this.articoloRepository.findById(id).orElse(null);
+        
+        if (articoloEsistente != null && principal != null) {
+            String emailLoggata = principal.getAttribute("email");
+            if (articoloEsistente.getVenditore() != null && emailLoggata.equals(articoloEsistente.getVenditore().getEmail())) {
+                // Aggiorniamo solo i campi testuali
+                articoloEsistente.setNome(articoloModificato.getNome());
+                articoloEsistente.setDescrizione(articoloModificato.getDescrizione());
+                articoloEsistente.setPrezzo(articoloModificato.getPrezzo());
+                this.articoloRepository.save(articoloEsistente);
+            }
+        }
         return "redirect:/";
     }
 
     // ==========================================
-    // 4. DETTAGLIO ARTICOLO (Mattia - Read 2)
+    // 4. DETTAGLIO ARTICOLO
     // ==========================================
     @GetMapping("/articolo/{id}")
     public String mostraDettaglioArticolo(@PathVariable("id") Long id, Model model) {
         Articolo articolo = this.articoloRepository.findById(id).orElse(null);
-        
-        if (articolo == null) {
-            return "redirect:/";
-        }
+        if (articolo == null) return "redirect:/";
 
         model.addAttribute("articolo", articolo);
-        // Prepariamo l'oggetto per il form (Caso 5)
         model.addAttribute("recensione", new Recensione());
-        
         return "dettaglio-articolo"; 
     }
 
-  // ==========================================
-    // 5. AGGIUNGI RECENSIONE (Collegata a Google!)
+    // ==========================================
+    // 5. AGGIUNGI RECENSIONE
     // ==========================================
     @PostMapping("/articolo/{idArticolo}/recensione")
     public String aggiungiRecensione(@PathVariable("idArticolo") Long idArticolo, 
@@ -123,57 +163,46 @@ public class ArticoloController {
         
         Articolo articolo = this.articoloRepository.findById(idArticolo).orElse(null);
         
-        // Se l'articolo esiste e l'utente è loggato con Google
         if (articolo != null && principal != null) {
-            
-            // Prendiamo la mail di Google
             String email = principal.getAttribute("email");
-            String nome = principal.getAttribute("given_name");
-            String cognome = principal.getAttribute("family_name");
-
-            // Cerchiamo l'utente usando il TUO UserRepository
             Utente autore = this.userRepository.findByEmail(email).orElse(null);
             
-            // Se è la prima volta che entra, lo creiamo!
             if (autore == null) {
                 autore = new Utente();
                 autore.setEmail(email);
-                autore.setNome(nome);
-                autore.setCognome(cognome);
+                autore.setNome(principal.getAttribute("given_name"));
+                autore.setCognome(principal.getAttribute("family_name"));
                 this.userRepository.save(autore);
             }
 
-            // Assegniamo il vero autore alla recensione
             recensione.setId(null); 
             recensione.setArticolo(articolo);
             recensione.setAutore(autore); 
             
-            try {
-                this.recensioneRepository.save(recensione);
-            } catch (Exception e) {
-                System.out.println("ERRORE SALVATAGGIO RECENSIONE: " + e.getMessage());
-                return "redirect:/articolo/" + idArticolo + "?error"; 
-            }
+            this.recensioneRepository.save(recensione);
         }
-        
         return "redirect:/articolo/" + idArticolo;
     }
+
     // ==========================================
-    // 6. ELIMINA RECENSIONE (Mattia - Delete)
+    // 6. ELIMINA RECENSIONE (Solo se sei l'autore!)
     // ==========================================
     @GetMapping("/recensione/elimina/{id}")
-    public String eliminaRecensione(@PathVariable("id") Long id) {
-        // 1. Cerchiamo la recensione per sapere a quale articolo apparteneva
+    public String eliminaRecensione(@PathVariable("id") Long id, 
+                                    @AuthenticationPrincipal OAuth2User principal) { // <-- Controllo Sicurezza
+        
         Recensione recensione = this.recensioneRepository.findById(id).orElse(null);
         
-        if (recensione != null) {
-            Long articoloId = recensione.getArticolo().getId();
-            // 2. La eliminiamo dal database
-            this.recensioneRepository.delete(recensione);
-            // 3. Torniamo alla pagina di dettaglio dell'articolo
-            return "redirect:/articolo/" + articoloId;
+        if (recensione != null && principal != null) {
+            String emailLoggata = principal.getAttribute("email");
+            
+            // Verifica che chi tenta di eliminare sia il vero autore
+            if (recensione.getAutore() != null && emailLoggata.equals(recensione.getAutore().getEmail())) {
+                Long articoloId = recensione.getArticolo().getId();
+                this.recensioneRepository.delete(recensione);
+                return "redirect:/articolo/" + articoloId;
+            }
         }
-        
         return "redirect:/";
     }
 }

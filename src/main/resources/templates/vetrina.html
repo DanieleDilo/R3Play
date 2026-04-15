@@ -63,7 +63,9 @@
                 <h3 class="card-titolo" th:text="${articolo.nome}">Nome Articolo</h3>
                 <p class="card-desc" th:text="${articolo.descrizione}">Descrizione breve...</p>
                 <p class="card-prezzo" th:text="${articolo.prezzo} + ' €'">0.00 €</p>
-                <a th:href="@{'/articolo/modifica/' + ${articolo.id}}" class="btn-modifica">✏️ Modifica</a>
+                <div th:if="${#authentication.name != 'anonymousUser' and #authentication.principal.attributes['email'] == articolo.venditore?.email}">
+                    <a th:href="@{'/articolo/modifica/' + ${articolo.id}}" class="btn-modifica">✏️ Modifica</a>
+                </div>
                 <a th:href="@{'/articolo/' + ${articolo.id}}" style="display: block; text-align: center; margin-top: 10px; color: #007bff; text-decoration: none;">Visualizza Dettaglio</a>
             </div>
         </div>
