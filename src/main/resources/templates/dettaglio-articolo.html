@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="it" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>R3Play - Dettaglio Articolo</title>
@@ -7,7 +7,7 @@
     
     <style>
         .container { max-width: 1000px; margin: 0 auto; padding: 20px; font-family: sans-serif; }
-        header { border-bottom: 1px solid #eee; margin-bottom: 20px; padding-bottom: 10px; }
+        header { border-bottom: 1px solid #eee; margin-bottom: 20px; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .back-link { text-decoration: none; color: #333; font-weight: bold; }
         .back-link:hover { color: #2ecc71; }
         
@@ -42,6 +42,15 @@
     <div class="container">
         <header>
             <a href="/" class="back-link">← Torna alla Vetrina</a>
+            
+            <div sec:authorize="isAuthenticated()" style="display: flex; align-items: center; gap: 15px;">
+                <span style="font-size: 0.9em; color: #666;">
+                    Loggato come <strong th:text="${#authentication.principal.attributes['name']}">Utente</strong>
+                </span>
+                <form th:action="@{/logout}" method="post" style="margin: 0;">
+                    <button type="submit" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">Esci</button>
+                </form>
+            </div>
         </header>
 
         <main class="product-main">
@@ -59,7 +68,7 @@
                 
                 <p><strong>Descrizione:</strong></p>
                 <p th:text="${articolo.descrizione}" class="description-text">
-                    Questa è una descrizione segnaposto per mostrare come apparirà il testo quando l'articolo verrà caricato correttamente dal database su Supabase.
+                    Questa è una descrizione segnaposto...
                 </p>
                 
                 <div class="seller-info">
@@ -81,18 +90,18 @@
                     <div th:each="rec : ${articolo.recensioni}" class="review-card">
                         <div class="review-content">
                             <p>
-                                <strong th:text="${rec.autore != null ? rec.autore.nome : 'Anonimo'}">Autore</strong> 
+                                <strong th:text="${rec.autore != null ? rec.autore.nome + ' ' + rec.autore.cognome : 'Anonimo'}">Autore</strong> 
                                 — Voto: <span th:text="${rec.valutazione}" class="rating">5</span> / 5
                             </p>
                             <p th:text="${rec.testo}" style="color: #444; margin-top: 8px;">
-                                Ottimo prodotto, consegna veloce e qualità super! Consigliato.
+                                Ottimo prodotto...
                             </p>
                         </div>
                         
-                        <div>
+                        <div th:if="${#authentication.name != 'anonymousUser' and #authentication.principal.attributes['email'] == rec.autore?.email}">
                             <a th:href="@{'/recensione/elimina/' + ${rec.id}}" 
                                class="delete-btn" 
-                               onclick="return confirm('Sei sicuro di voler eliminare questa recensione? L\'azione è irreversibile.')">
+                               onclick="return confirm('Sei sicuro di voler eliminare la tua recensione?')">
                                Elimina
                             </a>
                         </div>

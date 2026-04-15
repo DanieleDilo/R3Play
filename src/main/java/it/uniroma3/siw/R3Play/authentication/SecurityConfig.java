@@ -6,8 +6,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -16,15 +14,21 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(authorize -> authorize
-                // Pagine libere a tutti (Vetrina e Dettaglio)
-                .requestMatchers("/", "/articolo/{id}", "/css/**", "/images/**", "/uploads/**").permitAll()
-                // Tutto il resto (aggiungi articolo, recensione, elimina) richiede il login
+                // AGGIUNTA FONDAMENTALE: /error e /favicon.ico per evitare i "login ombra"
+                .requestMatchers("/", "/articolo/{id}", "/css/**", "/images/**", "/uploads/**", "/error", "/favicon.ico").permitAll()
+                
+                // Tutto il resto (aggiungi, modifica, recensisci) richiede il login
                 .anyRequest().authenticated()
             )
-            // Abilitiamo il login tramite OAuth2
-            .oauth2Login(withDefaults())
-            // Abilitiamo il logout e torniamo in vetrina
-            .logout(logout -> logout.logoutSuccessUrl("/"));
+            .oauth2Login(oauth2 -> oauth2
+                .defaultSuccessUrl("/", true) 
+            )
+            .logout(logout -> logout
+                .logoutSuccessUrl("/")
+                .invalidateHttpSession(true)
+                .clearAuthentication(true)
+                .deleteCookies("JSESSIONID")
+            );
 
         return http.build();
     }

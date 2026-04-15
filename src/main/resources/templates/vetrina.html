@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<html lang="it" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Vetrina - R3Play</title>
@@ -31,13 +31,13 @@
 <body>
 
     <div class="login-bar">
-        <div th:if="${#authentication.name == 'anonymousUser'}">
+        <div sec:authorize="isAnonymous()">
             <a th:href="@{/oauth2/authorization/google}" style="background: #4285F4; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
                 🔵 Accedi con Google
             </a>
         </div>
 
-        <div th:if="${#authentication.name != 'anonymousUser'}">
+        <div sec:authorize="isAuthenticated()">
             <span style="font-size: 1.1em; margin-right: 15px;">
                 Ciao, <strong th:text="${#authentication.principal.attributes['name']}">Utente</strong>!
             </span>
@@ -46,6 +46,7 @@
             </form>
         </div>
     </div>
+    
     <h1>Benvenuto in R3Play 🚀</h1>
     <div class="header-actions">
         <a th:href="@{/articolo/nuovo}" class="btn-nuovo">+ Vendi un Articolo</a>
