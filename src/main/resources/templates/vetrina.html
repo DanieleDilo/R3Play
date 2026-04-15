@@ -44,6 +44,7 @@
                 <p class="card-desc" th:text="${articolo.descrizione}">Descrizione breve...</p>
                 <p class="card-prezzo" th:text="${articolo.prezzo} + ' €'">0.00 €</p>
                 <a th:href="@{'/articolo/modifica/' + ${articolo.id}}" class="btn-modifica">✏️ Modifica</a>
+                <a th:href="@{'/articolo/' + ${articolo.id}}">Visualizza Dettaglio</a>
             </div>
         </div>
 

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>R3Play - Dettaglio Articolo</title>
+    <link rel="stylesheet" href="/css/style.css">
+    
+    <style>
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; font-family: sans-serif; }
+        header { border-bottom: 1px solid #eee; margin-bottom: 20px; padding-bottom: 10px; }
+        .back-link { text-decoration: none; color: #333; font-weight: bold; }
+        .back-link:hover { color: #2ecc71; }
+        
+        .product-main { display: flex; gap: 40px; align-items: flex-start; }
+        .product-gallery { flex: 1; text-align: center; }
+        .product-img { width: 100%; max-width: 450px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .product-details { flex: 1.2; }
+        
+        .price-tag { font-size: 2em; color: #2ecc71; font-weight: bold; margin: 10px 0; }
+        .description-text { color: #555; line-height: 1.6; background: #fefefe; padding: 15px; border-radius: 8px; border: 1px solid #eee; }
+        .seller-info { background: #f9f9f9; padding: 10px 15px; border-radius: 8px; display: inline-block; margin-top: 10px; border: 1px solid #eee; }
+
+        .reviews-section { margin-top: 40px; border-top: 2px solid #eee; padding-top: 20px; }
+        .review-card { border-bottom: 1px solid #f1f1f1; padding: 20px 0; display: flex; justify-content: space-between; align-items: flex-start; }
+        .review-content { flex: 1; }
+        .rating { color: #f1c40f; font-weight: bold; font-size: 1.1em; }
+        
+        .delete-btn { color: #ff4d4d; text-decoration: none; font-size: 0.85em; border: 1px solid #ff4d4d; padding: 4px 10px; border-radius: 4px; transition: 0.2s; }
+        .delete-btn:hover { background: #ff4d4d; color: white; }
+        
+        .form-box { background: #fdfdfd; padding: 25px; border-radius: 10px; border: 1px solid #e0e0e0; margin-top: 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .form-group { margin-bottom: 15px; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; color: #333; }
+        select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        textarea { resize: vertical; }
+        .submit-btn { background: #2ecc71; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-size: 1.1em; cursor: pointer; transition: 0.2s; font-weight: bold; }
+        .submit-btn:hover { background: #27ae60; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <a href="/" class="back-link">← Torna alla Vetrina</a>
+        </header>
+
+        <main class="product-main">
+            <section class="product-gallery">
+                <img th:src="${articolo.urlFoto != null ? articolo.urlFoto : '/images/default.png'}" 
+                     alt="Immagine del prodotto" class="product-img">
+            </section>
+
+            <section class="product-details">
+                <h1 th:text="${articolo.nome}">Nome Articolo di Esempio</h1>
+                
+                <p class="price-tag">
+                    <span th:text="${articolo.prezzo}">0.00</span> €
+                </p>
+                
+                <p><strong>Descrizione:</strong></p>
+                <p th:text="${articolo.descrizione}" class="description-text">
+                    Questa è una descrizione segnaposto per mostrare come apparirà il testo quando l'articolo verrà caricato correttamente dal database su Supabase.
+                </p>
+                
+                <div class="seller-info">
+                   <strong>Venditore:</strong> 
+                   <span th:text="${articolo.venditore != null ? articolo.venditore.nome : 'Utente R3Play'}">Nome Venditore</span>
+                </div>
+                
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+                <section class="reviews-section">
+                    <h3>Recensioni dei clienti R3Play</h3>
+                    
+                    <div th:if="${#lists.isEmpty(articolo.recensioni)}" style="text-align: center; color: #888; padding: 20px;">
+                        <p style="font-size: 1.2em;">⭐</p>
+                        <p>Nessuna recensione per questo articolo.</p>
+                        <p>Sii il primo a condividere la tua opinione!</p>
+                    </div>
+
+                    <div th:each="rec : ${articolo.recensioni}" class="review-card">
+                        <div class="review-content">
+                            <p>
+                                <strong th:text="${rec.autore != null ? rec.autore.nome : 'Anonimo'}">Autore</strong> 
+                                — Voto: <span th:text="${rec.valutazione}" class="rating">5</span> / 5
+                            </p>
+                            <p th:text="${rec.testo}" style="color: #444; margin-top: 8px;">
+                                Ottimo prodotto, consegna veloce e qualità super! Consigliato.
+                            </p>
+                        </div>
+                        
+                        <div>
+                            <a th:href="@{'/recensione/elimina/' + ${rec.id}}" 
+                               class="delete-btn" 
+                               onclick="return confirm('Sei sicuro di voler eliminare questa recensione? L\'azione è irreversibile.')">
+                               Elimina
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="form-box">
+                    <h3>Lascia la tua recensione</h3>
+                    <p style="color: #666; font-size: 0.9em; margin-bottom: 20px;">
+                        Aiuta gli altri utenti a fare una scelta informata.
+                    </p>
+                    
+                    <form th:action="@{'/articolo/' + ${articolo.id} + '/recensione'}" 
+                          th:object="${recensione}" 
+                          method="POST">
+                        
+                        <div class="form-group">
+                            <label>La tua valutazione:</label>
+                            <select th:field="*{valutazione}" required>
+                                <option value="" disabled selected>Scegli un punteggio...</option>
+                                <option value="5">⭐⭐⭐⭐⭐ (Eccellente)</option>
+                                <option value="4">⭐⭐⭐⭐ (Buono)</option>
+                                <option value="3">⭐⭐⭐ (Sufficiente)</option>
+                                <option value="2">⭐⭐ (Scarso)</option>
+                                <option value="1">⭐ (Pessimo)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Cosa ne pensi?</label>
+                            <textarea th:field="*{testo}" rows="4" placeholder="Scrivi qui il tuo commento dettagliato..." required></textarea>
+                        </div>
+
+                        <div style="text-align: right; margin-top: 20px;">
+                            <button type="submit" class="submit-btn">Pubblica Recensione</button>
+                        </div>
+                    </form>
+                </section>
+                
+            </section>
+        </main>
+    </div>
+
+</body>
+</html>

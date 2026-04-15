@@ -16,7 +16,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import it.uniroma3.siw.R3Play.model.Articolo;
+import it.uniroma3.siw.R3Play.model.Recensione;
 import it.uniroma3.siw.R3Play.repository.ArticoloRepository;
+import it.uniroma3.siw.R3Play.repository.RecensioneRepository;
 
 @Controller
 public class ArticoloController {
@@ -24,74 +26,129 @@ public class ArticoloController {
     @Autowired
     private ArticoloRepository articoloRepository;
 
-    // Mostra la pagina principale con tutti gli articoli
+    @Autowired
+    private RecensioneRepository recensioneRepository;
+
+    // ==========================================
+    // 1. VETRINA (Daniele - Read 1)
+    // ==========================================
     @GetMapping("/")
     public String mostraVetrina(Model model) {
-        // 1. Chiede al database TUTTI gli articoli salvati
         Iterable<Articolo> tuttiGliArticoli = this.articoloRepository.findAll();
-        
-        // 2. Li "impacchetta" e li invia alla pagina HTML con il nome "articoli"
         model.addAttribute("articoli", tuttiGliArticoli);
-        
-        // 3. Dice a Spring di aprire il file "vetrina.html"
         return "vetrina";
     }
 
+    // ==========================================
+    // 2. NUOVO ARTICOLO (Daniele - Insert)
+    // ==========================================
     @GetMapping("/articolo/nuovo")
     public String mostraFormNuovoArticolo(Model model) {
         model.addAttribute("articolo", new Articolo());
         return "nuovo-articolo"; 
     }
 
-    // Aggiunto @RequestParam per catturare il file dal form
     @PostMapping("/articolo/nuovo")
     public String salvaNuovoArticolo(@ModelAttribute("articolo") Articolo articolo, 
                                      @RequestParam("fileImmagine") MultipartFile immagine) {
         try {
-            // Se l'utente ha caricato un'immagine
             if (!immagine.isEmpty()) {
-                // 1. Creiamo una cartella "uploads" dentro la cartella static
                 String uploadDir = "src/main/resources/static/uploads/";
                 Path uploadPath = Paths.get(uploadDir);
-                
                 if (!Files.exists(uploadPath)) {
                     Files.createDirectories(uploadPath);
                 }
-
-                // 2. Salviamo il file fisicamente nella cartella
                 String fileName = immagine.getOriginalFilename();
                 Path filePath = uploadPath.resolve(fileName);
                 Files.copy(immagine.getInputStream(), filePath);
-
-                // 3. Diciamo all'Articolo qual è il percorso per ritrovare l'immagine
                 articolo.setUrlFoto("/uploads/" + fileName);
             }
         } catch (IOException e) {
             System.out.println("Errore durante il salvataggio dell'immagine!");
             e.printStackTrace();
         }
-
-        // Salviamo l'articolo nel database (ora avrà il percorso dell'immagine corretto)
         this.articoloRepository.save(articolo);
-        
         return "redirect:/"; 
     }
 
-    // 1. Quando l'utente clicca su "Modifica", recupera l'articolo dal DB e mostra il form precompilato
+    // ==========================================
+    // 3. MODIFICA ARTICOLO (Daniele - Update)
+    // ==========================================
     @GetMapping("/articolo/modifica/{id}")
     public String mostraFormModifica(@PathVariable("id") Long id, Model model) {
-        // Cerca l'articolo per ID. Se lo trova lo passa al modello.
-        Articolo articoloDaModificare = this.articoloRepository.findById(id).get();
+        Articolo articoloDaModificare = this.articoloRepository.findById(id).orElse(null);
         model.addAttribute("articolo", articoloDaModificare);
         return "modifica-articolo";
     }
 
-    // 2. Quando l'utente salva le modifiche
     @PostMapping("/articolo/modifica/{id}")
     public String salvaModificaArticolo(@ModelAttribute("articolo") Articolo articolo) {
-        // Spring Boot è intelligente: se l'oggetto "articolo" ha già un ID, 
-        // fa in automatico un UPDATE invece di un INSERT!
         this.articoloRepository.save(articolo);
+        return "redirect:/";
+    }
+
+    // ==========================================
+    // 4. DETTAGLIO ARTICOLO (Mattia - Read 2)
+    // ==========================================
+    @GetMapping("/articolo/{id}")
+    public String mostraDettaglioArticolo(@PathVariable("id") Long id, Model model) {
+        Articolo articolo = this.articoloRepository.findById(id).orElse(null);
+        
+        if (articolo == null) {
+            return "redirect:/";
+        }
+
+        model.addAttribute("articolo", articolo);
+        // Prepariamo l'oggetto per il form (Caso 5)
+        model.addAttribute("recensione", new Recensione());
+        
+        return "dettaglio-articolo"; 
+    }
+
+   // ==========================================
+    // 5. AGGIUNGI RECENSIONE (Mattia - Insert)
+    // ==========================================
+    @PostMapping("/articolo/{idArticolo}/recensione") // <-- RINOMINATO IN idArticolo
+    public String aggiungiRecensione(@PathVariable("idArticolo") Long idArticolo, 
+                                     @ModelAttribute("recensione") Recensione recensione) {
+        
+        // 1. Cerchiamo l'articolo usando idArticolo
+        Articolo articolo = this.articoloRepository.findById(idArticolo).orElse(null);
+        
+        if (articolo != null) {
+            // 2. TRUCCO FONDAMENTALE: Diciamo a Spring che questa è una NUOVA recensione 
+            // annullando qualsiasi ID che ha provato a inserire per sbaglio.
+            recensione.setId(null); 
+            
+            // 3. Colleghiamo la recensione all'articolo
+            recensione.setArticolo(articolo);
+            
+            try {
+                this.recensioneRepository.save(recensione);
+            } catch (Exception e) {
+                System.out.println("ERRORE SALVATAGGIO RECENSIONE: " + e.getMessage());
+                return "redirect:/articolo/" + idArticolo + "?error"; 
+            }
+        }
+        
+        return "redirect:/articolo/" + idArticolo;
+    }
+    // ==========================================
+    // 6. ELIMINA RECENSIONE (Mattia - Delete)
+    // ==========================================
+    @GetMapping("/recensione/elimina/{id}")
+    public String eliminaRecensione(@PathVariable("id") Long id) {
+        // 1. Cerchiamo la recensione per sapere a quale articolo apparteneva
+        Recensione recensione = this.recensioneRepository.findById(id).orElse(null);
+        
+        if (recensione != null) {
+            Long articoloId = recensione.getArticolo().getId();
+            // 2. La eliminiamo dal database
+            this.recensioneRepository.delete(recensione);
+            // 3. Torniamo alla pagina di dettaglio dell'articolo
+            return "redirect:/articolo/" + articoloId;
+        }
+        
         return "redirect:/";
     }
 }
