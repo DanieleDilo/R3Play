@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Accedi - R3Play</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        .form-group { text-align: left; margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #333; }
+        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .btn-submit { width: 100%; padding: 12px; background-color: #6DB33F; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-submit:hover { background-color: #5aa032; }
+        .btn-google { display: block; width: 100%; padding: 12px; background-color: #4285F4; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 15px; box-sizing: border-box;}
+        .btn-google:hover { background-color: #357ae8; }
+        .divider { margin: 20px 0; border-bottom: 1px solid #eee; position: relative; }
+        .divider span { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: white; padding: 0 10px; color: #999; font-size: 0.9em; }
+        .alert-error { color: #d9534f; background: #f2dede; padding: 10px; border-radius: 5px; margin-bottom: 15px; }
+        .alert-success { color: #3c763d; background: #dff0d8; padding: 10px; border-radius: 5px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <h2 style="color: #6DB33F; margin-top: 0;">R3Play 🏀</h2>
+        <p>Bentornato! Accedi al tuo account.</p>
+
+        <div th:if="${param.error}" class="alert-error">
+            Email o Password errati. Riprova.
+        </div>
+        <div th:if="${param.logout}" class="alert-success">
+            Ti sei disconnesso con successo.
+        </div>
+        <div th:if="${param.registrato}" class="alert-success">
+            Registrazione completata! Ora puoi accedere.
+        </div>
+
+        <form th:action="@{/login}" method="POST">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required placeholder="tu@email.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required placeholder="••••••••">
+            </div>
+
+            <button type="submit" class="btn-submit">Accedi</button>
+        </form>
+
+        <div class="divider"><span>OPPURE</span></div>
+
+        <a th:href="@{/oauth2/authorization/google}" class="btn-google">Accedi con Google</a>
+
+        <p style="margin-top: 25px; font-size: 0.9em;">
+            Non hai un account? <a th:href="@{/registrati}" style="color: #6DB33F; font-weight: bold;">Registrati ora</a>
+        </p>
+    </div>
+
+</body>
+</html>

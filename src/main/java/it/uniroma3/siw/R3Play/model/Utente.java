@@ -13,12 +13,15 @@ public class Utente {
     private String nome;
     private String cognome;
     private String email;
+    private String password;
+    private String provider; // Es. conterrà "LOCAL" o "GOOGLE"
 
     @OneToMany(mappedBy = "venditore")
     private List<Articolo> articoliInVendita;
 
     @OneToMany(mappedBy = "autore")
     private List<Recensione> recensioniScritte;
+
 
     public Long getId() {
         return id;
@@ -66,6 +69,22 @@ public class Utente {
 
     public void setRecensioniScritte(List<Recensione> recensioniScritte) {
         this.recensioniScritte = recensioniScritte;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getProvider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
     }
 
    

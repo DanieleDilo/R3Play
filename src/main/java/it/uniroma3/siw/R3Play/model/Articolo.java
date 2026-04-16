@@ -18,7 +18,7 @@ public class Articolo {
     @ManyToOne
     private Utente venditore;
 
-    @OneToMany(mappedBy = "articolo")
+    @OneToMany(mappedBy = "articolo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Recensione> recensioni;
 
     public Long getId() {
@@ -77,5 +77,4 @@ public class Articolo {
         this.recensioni = recensioni;
     }
 
-    
 }

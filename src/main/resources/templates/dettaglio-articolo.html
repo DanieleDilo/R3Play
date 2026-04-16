@@ -45,7 +45,7 @@
             
             <div sec:authorize="isAuthenticated()" style="display: flex; align-items: center; gap: 15px;">
                 <span style="font-size: 0.9em; color: #666;">
-                    Loggato come <strong th:text="${#authentication.principal.attributes['name']}">Utente</strong>
+                    Loggato come <strong th:text="${nomeLoggato}">Utente</strong>
                 </span>
                 <form th:action="@{/logout}" method="post" style="margin: 0;">
                     <button type="submit" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">Esci</button>
@@ -98,7 +98,7 @@
                             </p>
                         </div>
                         
-                        <div th:if="${#authentication.name != 'anonymousUser' and #authentication.principal.attributes['email'] == rec.autore?.email}">
+                        <div th:if="${emailLoggata != null and emailLoggata == rec.autore?.email}">
                             <a th:href="@{'/recensione/elimina/' + ${rec.id}}" 
                                class="delete-btn" 
                                onclick="return confirm('Sei sicuro di voler eliminare la tua recensione?')">

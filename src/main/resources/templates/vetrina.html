@@ -29,28 +29,25 @@
     </style>
 </head>
 <body>
-
-    <div class="login-bar">
+    
+    <h1>Benvenuto in R3Play 🚀</h1>
+    <nav style="background: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px;">
+    <a th:href="@{/}" style="font-size: 1.5em; font-weight: bold; color: #6DB33F; text-decoration: none;">R3Play 🏀</a>
+    <div>
         <div sec:authorize="isAnonymous()">
-            <a th:href="@{/oauth2/authorization/google}" style="background: #4285F4; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                🔵 Accedi con Google
-            </a>
+            <a th:href="@{/login}" style="padding: 10px 20px; background: #f0ad4e; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">Accedi</a>
         </div>
 
-        <div sec:authorize="isAuthenticated()">
-            <span style="font-size: 1.1em; margin-right: 15px;">
-                Ciao, <strong th:text="${#authentication.principal.attributes['name']}">Utente</strong>!
-            </span>
-            <form th:action="@{/logout}" method="post" style="display:inline;">
-                <button type="submit" style="background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">Esci</button>
+        <div sec:authorize="isAuthenticated()" style="display: flex; gap: 15px; align-items: center;">
+            <a th:href="@{/armadio}" style="color: #333; text-decoration: none; font-weight: bold;">📦 Il Mio Armadio</a>
+            <a th:href="@{/articolo/nuovo}" style="padding: 8px 15px; background: #6DB33F; color: white; text-decoration: none; border-radius: 5px;">+ Vendi</a>
+            <form th:action="@{/logout}" method="post" style="margin: 0;">
+                <button type="submit" style="background: none; border: none; color: #999; cursor: pointer; font-size: 0.9em;">Esci</button>
             </form>
         </div>
     </div>
     
-    <h1>Benvenuto in R3Play 🚀</h1>
-    <div class="header-actions">
-        <a th:href="@{/articolo/nuovo}" class="btn-nuovo">+ Vendi un Articolo</a>
-    </div>
+</nav>
 
     <div class="griglia-articoli">
         
@@ -63,7 +60,7 @@
                 <h3 class="card-titolo" th:text="${articolo.nome}">Nome Articolo</h3>
                 <p class="card-desc" th:text="${articolo.descrizione}">Descrizione breve...</p>
                 <p class="card-prezzo" th:text="${articolo.prezzo} + ' €'">0.00 €</p>
-                <div th:if="${#authentication.name != 'anonymousUser' and #authentication.principal.attributes['email'] == articolo.venditore?.email}">
+                <div th:if="${emailLoggata != null and emailLoggata == articolo.venditore?.email}">
                     <a th:href="@{'/articolo/modifica/' + ${articolo.id}}" class="btn-modifica">✏️ Modifica</a>
                 </div>
                 <a th:href="@{'/articolo/' + ${articolo.id}}" style="display: block; text-align: center; margin-top: 10px; color: #007bff; text-decoration: none;">Visualizza Dettaglio</a>
