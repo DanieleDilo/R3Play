@@ -24,6 +24,7 @@ import it.uniroma3.siw.R3Play.repository.ArticoloRepository;
 import it.uniroma3.siw.R3Play.repository.RecensioneRepository;
 import it.uniroma3.siw.R3Play.repository.UserRepository;
 
+@SuppressWarnings("null")
 @Controller
 public class ArticoloController {
 
