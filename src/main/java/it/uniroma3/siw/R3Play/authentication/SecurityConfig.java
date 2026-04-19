@@ -24,9 +24,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorize -> authorize
                 
                 // 1. Risorse di base e pagine di benvenuto permesse a tutti
-                .requestMatchers("/", "/css/**", "/images/**", "/uploads/**", "/error", "/favicon.ico", "/login", "/registrati").permitAll()
+                .requestMatchers("/", "/vetrina", "/css/**", "/images/**", "/uploads/**", "/error", "/favicon.ico", "/login", "/registrati").permitAll()
                 
-                // 2. IL FIX: Dettaglio articolo pubblico, ma SOLO se "id" è un numero da 0 a 9!
+                // 2. Dettaglio articolo pubblico, ma SOLO se "id" è un numero da 0 a 9!
                 .requestMatchers("/articolo/{id:[0-9]+}").permitAll()
                 
                 // 3. Qualsiasi altra richiesta (incluso /articolo/nuovo, /armadio, ecc.) viene bloccata se non sei loggato
@@ -37,13 +37,13 @@ public class SecurityConfig {
             .formLogin(form -> form
                 .loginPage("/login") // Diremo a Spring dove trovare la nostra pagina HTML personalizzata
                 .usernameParameter("email") // Usiamo l'email invece dello "username" standard
-                .defaultSuccessUrl("/", true)
+                .defaultSuccessUrl("/vetrina", true)
                 .permitAll()
             )
             // 3. CONFIGURAZIONE OAUTH2 (Google)
             .oauth2Login(oauth2 -> oauth2
                 .loginPage("/login") // Rimandiamo alla stessa pagina HTML per scegliere!
-                .defaultSuccessUrl("/", true) 
+                .defaultSuccessUrl("/vetrina", true) 
             )
             .logout(logout -> logout
                 .logoutSuccessUrl("/")

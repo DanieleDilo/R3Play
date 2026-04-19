@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Il Mio Armadio - R3Play</title>
+    <link rel="stylesheet" href="/css/style.css">
     <style>
         :root {
             --primary: #6DB33F;
@@ -79,8 +80,8 @@
 
         <div class="grid" th:if="${not #lists.isEmpty(mieiArticoli)}">
             <div class="item-card" th:each="art : ${mieiArticoli}">
-               <img th:if="${art.urlFoto != null}" th:src="@{${art.urlFoto}}" class="item-img" alt="Foto Prodotto">
-                <div th:unless="${art.urlFoto != null}" class="item-img" style="display:flex; align-items:center; justify-content:center; background:#eee; color:#999;">Nessuna Foto</div>
+               <img th:if="${art.urlFoto != null}" th:src="${art.urlFoto}" class="item-img" alt="Foto Prodotto">
+                <div th:unless="${art.urlFoto != null}" class="item-img placeholder">Nessuna Foto</div>
                 <div class="item-content">
                     <h3 th:text="${art.nome}" style="margin:0;">Nome</h3>
                     <p class="item-price" th:text="${art.prezzo} + ' €'">0.00 €</p>

@@ -3,70 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <title>Vetrina - R3Play</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0 0 20px 0; text-align: center; }
-        h1 { color: #6DB33F; margin-top: 20px; }
-        .header-actions { margin-bottom: 30px; }
-        .btn-nuovo { padding: 10px 20px; background-color: #6DB33F; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
-        .btn-nuovo:hover { background-color: #5aa032; }
-        
-        /* Griglia per gli articoli */
-        .griglia-articoli { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; padding: 0 20px; }
-        
-        /* Stile della singola "Card" */
-        .card-articolo { background: white; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 250px; overflow: hidden; text-align: left; transition: transform 0.2s;}
-        .card-articolo:hover { transform: translateY(-5px); }
-        .card-foto { width: 100%; height: 200px; object-fit: cover; background-color: #eee; }
-        .card-corpo { padding: 15px; }
-        .card-titolo { margin: 0 0 10px 0; font-size: 1.2em; color: #333; }
-        .card-prezzo { margin: 0; color: #6DB33F; font-size: 1.4em; font-weight: bold; }
-        .card-desc { font-size: 0.9em; color: #666; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .btn-modifica { display: block; text-align: center; margin-top: 10px; padding: 8px; background-color: #f0ad4e; color: white; text-decoration: none; border-radius: 5px; font-size: 0.9em; font-weight: bold; }
-        .btn-modifica:hover { background-color: #ec971f; }
-        
-        /* Stile per la barra superiore di Login */
-        .login-bar { text-align: right; padding: 15px 30px; background-color: #ffffff; border-bottom: 1px solid #ddd; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    </style>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    
-    <h1>Benvenuto in R3Play 🚀</h1>
-    <nav style="background: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px;">
-    <a th:href="@{/}" style="font-size: 1.5em; font-weight: bold; color: #6DB33F; text-decoration: none;">R3Play 🏀</a>
-    <div>
-        <div sec:authorize="isAnonymous()">
-            <a th:href="@{/login}" style="padding: 10px 20px; background: #f0ad4e; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">Accedi</a>
-        </div>
-
-        <div sec:authorize="isAuthenticated()" style="display: flex; gap: 15px; align-items: center;">
-            <a th:href="@{/armadio}" style="color: #333; text-decoration: none; font-weight: bold;">📦 Il Mio Armadio</a>
-            <a th:href="@{/articolo/nuovo}" style="padding: 8px 15px; background: #6DB33F; color: white; text-decoration: none; border-radius: 5px;">+ Vendi</a>
-            <form th:action="@{/logout}" method="post" style="margin: 0;">
-                <button type="submit" style="background: none; border: none; color: #999; cursor: pointer; font-size: 0.9em;">Esci</button>
-            </form>
-        </div>
-    </div>
-    
-</nav>
-
-    <div class="griglia-articoli">
-        
-        <div class="card-articolo" th:each="articolo : ${articoli}">
-            
-            <img th:if="${articolo.urlFoto != null}" th:src="@{${articolo.urlFoto}}" alt="Foto Articolo" class="card-foto">
-            <div th:unless="${articolo.urlFoto != null}" class="card-foto" style="display:flex; align-items:center; justify-content:center; color:#999;">Nessuna Foto</div>
-            
-            <div class="card-corpo">
-                <h3 class="card-titolo" th:text="${articolo.nome}">Nome Articolo</h3>
-                <p class="card-desc" th:text="${articolo.descrizione}">Descrizione breve...</p>
-                <p class="card-prezzo" th:text="${articolo.prezzo} + ' €'">0.00 €</p>
-                <div th:if="${emailLoggata != null and emailLoggata == articolo.venditore?.email}">
-                    <a th:href="@{'/articolo/modifica/' + ${articolo.id}}" class="btn-modifica">✏️ Modifica</a>
-                </div>
-                <a th:href="@{'/articolo/' + ${articolo.id}}" style="display: block; text-align: center; margin-top: 10px; color: #007bff; text-decoration: none;">Visualizza Dettaglio</a>
+    <nav class="navbar">
+        <a th:href="@{/}" class="logo">R3Play 🏀</a>
+        <div class="nav-actions">
+            <a th:href="@{/}" class="btn btn-ghost">Home</a>
+            <a th:href="@{/vetrina}" class="btn btn-ghost">Vetrina</a>
+            <div sec:authorize="isAnonymous()">
+                <a th:href="@{/login}" class="btn btn-secondary">Accedi</a>
+                <a th:href="@{/registrati}" class="btn btn-ghost">Registrati</a>
+            </div>
+            <div sec:authorize="isAuthenticated()" class="nav-actions">
+                <a th:href="@{/armadio}" class="btn btn-ghost">Il Mio Armadio</a>
+                <a th:href="@{/articolo/nuovo}" class="btn btn-primary">+ Vendi</a>
+                <form th:action="@{/logout}" method="post" style="margin:0;">
+                    <button type="submit" class="btn btn-ghost">Esci</button>
+                </form>
             </div>
         </div>
+    </nav>
 
+    <section class="hero">
+        <div>
+            <p class="eyebrow">Marketplace elegante per gli sportivi</p>
+            <h1 th:if="${nomeLoggato != null}" th:text="'Benvenuto, ' + ${nomeLoggato}">Benvenuto, atleta!</h1>
+            <h1 th:unless="${nomeLoggato != null}">Scopri la tua prossima attrezzatura sportiva.</h1>
+            <p>Ogni annuncio può contenere più immagini, descrizioni precise e soprattuto un look minimal ed elegante per attirare clienti seri. Qui trovi solo funzionalità reali, cliccabili e utili.</p>
+            <div class="actions" style="margin-top: 1.75rem;">
+                <a th:href="@{/articolo/nuovo}" class="btn btn-primary">Pubblica un annuncio</a>
+                <a th:href="@{/armadio}" class="btn btn-ghost">Vai al tuo armadio</a>
+            </div>
+        </div>
+        <div style="min-width: 320px; display: grid; gap: 1.25rem;">
+            <div class="feature-card">
+                <h3>Foto multiple</h3>
+                <p>Migliora ogni annuncio con una galleria fotografica completa dell'articolo.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Gestione intuitiva</h3>
+                <p>Modifica articoli, segui le recensioni e controlla il tuo armadio con semplicità.</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        <form th:action="@{/vetrina}" method="get" class="search-form">
+            <input type="text" name="q" placeholder="Cerca articoli o descrizioni" th:value="${query}">
+            <button type="submit" class="btn btn-secondary">Cerca</button>
+        </form>
+        <div th:if="${risultatiFiltro}" class="search-summary">
+            <p th:text="'Risultati per: ' + ${query}"></p>
+        </div>
+        <div class="grid" th:if="${not #lists.isEmpty(articoli)}">
+            <div class="card-articolo" th:each="articolo : ${articoli}">
+                <img th:if="${articolo.urlFoto != null}" th:src="${articolo.urlFoto}" alt="Foto Articolo" class="card-foto">
+                <div th:unless="${articolo.urlFoto != null}" class="card-foto placeholder">Nessuna Foto</div>
+                <div class="card-corpo">
+                    <h3 class="card-titolo" th:text="${articolo.nome}">Nome Articolo</h3>
+                    <p class="card-desc" th:text="${articolo.descrizione}">Descrizione breve...</p>
+                    <p class="card-prezzo" th:text="${articolo.prezzo} + ' €'">0.00 €</p>
+                    <div th:if="${emailLoggata != null and articolo.venditore != null and emailLoggata == articolo.venditore.email}">
+                        <a th:href="@{'/articolo/modifica/' + ${articolo.id}}" class="btn-modifica">✏️ Modifica</a>
+                    </div>
+                    <a th:href="@{'/articolo/' + ${articolo.id}}" style="display: block; text-align: center; margin-top: 10px; color: #007bff; text-decoration: none;">Visualizza Dettaglio</a>
+                </div>
+            </div>
+        </div>
+        <div th:if="${#lists.isEmpty(articoli)}" style="text-align: center; color: #777; padding: 3rem 1rem; background: white; border-radius: 20px; box-shadow: var(--shadow);">
+            <h2>Nessun articolo disponibile</h2>
+            <p>Pubblica il primo annuncio per apparire nella vetrina.</p>
+            <a th:href="@{/articolo/nuovo}" class="btn btn-primary">Pubblica un articolo</a>
+        </div>
     </div>
 
 </body>

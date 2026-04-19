@@ -4,90 +4,47 @@
 <head>
     <meta charset="UTF-8">
     <title>Vendi un Articolo - R3Play</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            display: flex;
-            justify-content: center;
-            padding-top: 50px;
-        }
-
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            width: 400px;
-        }
-
-        h2 {
-            color: #6DB33F;
-            text-align: center;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-
-        label {
-            margin-top: 15px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        input,
-        textarea {
-            padding: 10px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-family: inherit;
-        }
-
-        button {
-            margin-top: 25px;
-            padding: 12px;
-            background-color: #6DB33F;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-        }
-
-        button:hover {
-            background-color: #5aa032;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body>
+    <div class="welcome-shell form-page">
+        <div class="form-card">
+            <div class="page-header">
+                <span class="eyebrow">Vendi con facilità</span>
+                <h2>Metti in vendita il tuo articolo</h2>
+                <p>Compila i dettagli principali e carica immagini di qualità. Più informazioni dai, più velocemente sarà venduto.</p>
+            </div>
 
-    <div class="container">
-        <h2>Metti in vendita 🏀</h2>
+            <form th:action="@{/articolo/nuovo}" th:object="${articolo}" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="nome">Nome Articolo</label>
+                    <input type="text" id="nome" th:field="*{nome}" placeholder="Es. Racchetta da Tennis" required>
+                </div>
 
-        <form th:action="@{/articolo/nuovo}" th:object="${articolo}" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="descrizione">Descrizione</label>
+                    <textarea id="descrizione" th:field="*{descrizione}" rows="4" placeholder="Condizioni, marca, dettagli..." required></textarea>
+                </div>
 
-            <label for="nome">Nome Articolo:</label>
-            <input type="text" id="nome" th:field="*{nome}" placeholder="Es. Racchetta da Tennis" required>
+                <div class="form-group">
+                    <label for="prezzo">Prezzo (€)</label>
+                    <input type="number" step="0.01" id="prezzo" th:field="*{prezzo}" placeholder="Es. 25.50" required>
+                </div>
 
-            <label for="descrizione">Descrizione:</label>
-            <textarea id="descrizione" th:field="*{descrizione}" rows="3" placeholder="Condizioni, marca, dettagli..."
-                required></textarea>
+                <div class="form-group">
+                    <label for="fileImmagine">Carica fino a 5 foto</label>
+                    <input type="file" id="fileImmagine" name="fileImmagine" accept="image/*" multiple>
+                    <p class="help-text">Mostra l'articolo da più angolazioni per attirare più compratori.</p>
+                </div>
 
-            <label for="prezzo">Prezzo (€):</label>
-            <input type="number" step="0.01" id="prezzo" th:field="*{prezzo}" placeholder="Es. 25.50" required>
-
-            <label for="fileImmagine">Carica una Foto (anche con copia-incolla):</label>
-            <input type="file" id="fileImmagine" name="fileImmagine" accept="image/*">
-
-            <button type="submit">Pubblica Annuncio</button>
-        </form>
+                <div class="form-action-row">
+                    <button type="submit" class="btn btn-primary">Pubblica Annuncio</button>
+                    <a th:href="@{/vetrina}" class="btn btn-ghost">Annulla</a>
+                </div>
+            </form>
+        </div>
     </div>
-
 </body>
 
 </html>

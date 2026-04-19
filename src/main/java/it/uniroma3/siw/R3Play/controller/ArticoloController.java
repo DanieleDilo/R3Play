@@ -1,6 +1,7 @@
 package it.uniroma3.siw.R3Play.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -37,24 +38,63 @@ public class ArticoloController {
     @Autowired
     private UserRepository userRepository;
 
+    @Value("${upload.dir:uploads}")
+    private String uploadDir;
+
+    @ModelAttribute("nomeLoggato")
+    public String populateNomeLoggato(@AuthenticationPrincipal Object principal) {
+        Utente utenteLoggato = getUtenteLoggato(principal);
+        return utenteLoggato != null ? buildNomeCompleto(utenteLoggato) : null;
+    }
+
+    @ModelAttribute("emailLoggata")
+    public String populateEmailLoggata(@AuthenticationPrincipal Object principal) {
+        Utente utenteLoggato = getUtenteLoggato(principal);
+        return utenteLoggato != null ? utenteLoggato.getEmail() : null;
+    }
+
     // ==========================================
-    // 1. VETRINA
+    // 1. WELCOME / SPLASH
     // ==========================================
     @GetMapping("/")
-    public String mostraVetrina(Model model, @AuthenticationPrincipal Object principal) {
-        Iterable<Articolo> tuttiGliArticoli = this.articoloRepository.findAll();
-        model.addAttribute("articoli", tuttiGliArticoli);
+    public String mostraWelcome(Model model, @AuthenticationPrincipal Object principal) {
+        Utente utenteLoggato = getUtenteLoggato(principal);
+        if (utenteLoggato != null) {
+            model.addAttribute("nomeLoggato", buildNomeCompleto(utenteLoggato));
+        }
+        return "welcome";
+    }
+
+    // ==========================================
+    // 2. VETRINA
+    // ==========================================
+    @GetMapping("/vetrina")
+    public String mostraVetrina(@RequestParam(name = "q", required = false) String query,
+            Model model, @AuthenticationPrincipal Object principal) {
+
+        Iterable<Articolo> articoli;
+        if (query != null && !query.isBlank()) {
+            articoli = this.articoloRepository.findByNomeContainingIgnoreCaseOrDescrizioneContainingIgnoreCase(query, query);
+            model.addAttribute("query", query);
+            model.addAttribute("risultatiFiltro", true);
+        } else {
+            articoli = this.articoloRepository.findAll();
+            model.addAttribute("risultatiFiltro", false);
+        }
+
+        model.addAttribute("articoli", articoli);
 
         Utente utenteLoggato = getUtenteLoggato(principal);
         if (utenteLoggato != null) {
             model.addAttribute("emailLoggata", utenteLoggato.getEmail());
+            model.addAttribute("nomeLoggato", buildNomeCompleto(utenteLoggato));
         }
 
         return "vetrina";
     }
 
     // ==========================================
-    // 2. NUOVO ARTICOLO
+    // 3. NUOVO ARTICOLO
     // ==========================================
     @GetMapping("/articolo/nuovo")
     public String mostraFormNuovoArticolo(Model model) {
@@ -64,7 +104,7 @@ public class ArticoloController {
 
     @PostMapping("/articolo/nuovo")
     public String salvaNuovoArticolo(@ModelAttribute("articolo") Articolo articolo,
-            @RequestParam("fileImmagine") MultipartFile immagine,
+            @RequestParam("fileImmagine") MultipartFile[] immagini,
             @AuthenticationPrincipal Object principal) {
 
         Utente venditore = getUtenteLoggato(principal);
@@ -72,27 +112,32 @@ public class ArticoloController {
             articolo.setVenditore(venditore);
         }
 
-       // Gestione Immagine con NOME UNICO
         try {
-            if (!immagine.isEmpty()) {
-                String uploadDir = "src/main/resources/static/uploads/";
-                Path uploadPath = Paths.get(uploadDir);
-                if (!Files.exists(uploadPath)) Files.createDirectories(uploadPath);
+            Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
 
-                // --- FIX: Rendiamo il nome unico usando il tempo in millisecondi ---
-                String fileName = System.currentTimeMillis() + "_" + immagine.getOriginalFilename();
-                // -------------------------------------------------------------------
-
-                Path filePath = uploadPath.resolve(fileName);
-                Files.copy(immagine.getInputStream(), filePath); // Ora non troverà mai un duplicato!
-                articolo.setUrlFoto("/uploads/" + fileName);
+            boolean firstImage = true;
+            for (MultipartFile immagine : immagini) {
+                if (immagine != null && !immagine.isEmpty()) {
+                    String fileName = System.currentTimeMillis() + "_" + immagine.getOriginalFilename();
+                    Path filePath = uploadPath.resolve(fileName);
+                    Files.copy(immagine.getInputStream(), filePath);
+                    String fileUrl = "/uploads/" + fileName;
+                    if (firstImage) {
+                        articolo.setUrlFoto(fileUrl);
+                        firstImage = false;
+                    }
+                    articolo.addFotoUrl(fileUrl);
+                }
             }
         } catch (IOException e) {
             System.out.println("Errore immagine: " + e.getMessage());
         }
 
         this.articoloRepository.save(articolo);
-        return "redirect:/armadio"; 
+        return "redirect:/armadio";
     }
 
     // ==========================================
@@ -118,6 +163,7 @@ public class ArticoloController {
     @PostMapping("/articolo/modifica/{id}")
     public String salvaModificaArticolo(@PathVariable("id") Long id,
             @ModelAttribute("articolo") Articolo articoloModificato,
+            @RequestParam("fileImmagine") MultipartFile[] immagini,
             @AuthenticationPrincipal Object principal) {
         
         Articolo articoloEsistente = this.articoloRepository.findById(id).orElse(null);
@@ -128,6 +174,29 @@ public class ArticoloController {
                 articoloEsistente.setNome(articoloModificato.getNome());
                 articoloEsistente.setDescrizione(articoloModificato.getDescrizione());
                 articoloEsistente.setPrezzo(articoloModificato.getPrezzo());
+
+                try {
+                    Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+                    if (!Files.exists(uploadPath)) {
+                        Files.createDirectories(uploadPath);
+                    }
+
+                    for (MultipartFile immagine : immagini) {
+                        if (immagine != null && !immagine.isEmpty()) {
+                            String fileName = System.currentTimeMillis() + "_" + immagine.getOriginalFilename();
+                            Path filePath = uploadPath.resolve(fileName);
+                            Files.copy(immagine.getInputStream(), filePath);
+                            String fileUrl = "/uploads/" + fileName;
+                            articoloEsistente.addFotoUrl(fileUrl);
+                            if (articoloEsistente.getUrlFoto() == null) {
+                                articoloEsistente.setUrlFoto(fileUrl);
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    System.out.println("Errore immagine durante la modifica: " + e.getMessage());
+                }
+
                 this.articoloRepository.save(articoloEsistente);
             }
         }
@@ -147,7 +216,7 @@ public class ArticoloController {
         Utente utenteLoggato = getUtenteLoggato(principal);
         if (utenteLoggato != null) {
             model.addAttribute("emailLoggata", utenteLoggato.getEmail());
-            model.addAttribute("nomeLoggato", utenteLoggato.getNome());
+            model.addAttribute("nomeLoggato", buildNomeCompleto(utenteLoggato));
         } else {
             model.addAttribute("nomeLoggato", "Ospite");
         }
@@ -264,10 +333,32 @@ public class ArticoloController {
         // 1. Estrazione dati in base al tipo di login
         if (principal instanceof org.springframework.security.oauth2.core.user.OAuth2User) {
             org.springframework.security.oauth2.core.user.OAuth2User oauth = (org.springframework.security.oauth2.core.user.OAuth2User) principal;
-            email = oauth.getAttribute("email");
-            nome = oauth.getAttribute("given_name");
-            cognome = oauth.getAttribute("family_name");
+            Object emailAttr = oauth.getAttribute("email");
+            email = emailAttr != null ? emailAttr.toString() : null;
             provider = "GOOGLE";
+
+            Object givenName = oauth.getAttribute("given_name");
+            Object familyName = oauth.getAttribute("family_name");
+            Object fullName = oauth.getAttribute("name");
+
+            if (givenName != null) {
+                nome = givenName.toString();
+            }
+            if (familyName != null) {
+                cognome = familyName.toString();
+            }
+            if ((nome == null || nome.isBlank()) && fullName != null) {
+                String[] parts = fullName.toString().trim().split(" ");
+                if (parts.length > 0) {
+                    nome = parts[0];
+                    if (parts.length > 1) {
+                        cognome = parts[parts.length - 1];
+                    }
+                }
+            }
+            if ((nome == null || nome.isBlank()) && email != null) {
+                nome = email.split("@")[0];
+            }
         } else if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
             email = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
         }
@@ -275,20 +366,71 @@ public class ArticoloController {
         // 2. Controllo e salvataggio sul Database
         if (email != null) {
             Utente utente = this.userRepository.findByEmail(email).orElse(null);
-            
-            // AUTO-REGISTRAZIONE SE L'UTENTE GOOGLE È NUOVO
             if (utente == null && "GOOGLE".equals(provider)) {
                 utente = new Utente();
                 utente.setEmail(email);
-                utente.setNome(nome != null ? nome : "Utente");
-                utente.setCognome(cognome != null ? cognome : "Google");
+                utente.setNome(capitalize(nome != null ? nome : "Utente"));
+                utente.setCognome(capitalize(cognome != null ? cognome : "Google"));
                 utente.setProvider(provider);
-                
-                // Salviamo il nuovo utente Google nel DB per sempre!
                 this.userRepository.save(utente);
+            } else if (utente != null && "GOOGLE".equals(provider)) {
+                boolean dirty = false;
+                if ((utente.getNome() == null || utente.getNome().isBlank()) && nome != null) {
+                    utente.setNome(capitalize(nome));
+                    dirty = true;
+                }
+                if ((utente.getCognome() == null || utente.getCognome().isBlank()) && cognome != null) {
+                    utente.setCognome(capitalize(cognome));
+                    dirty = true;
+                }
+                if (dirty) {
+                    this.userRepository.save(utente);
+                }
             }
             return utente;
         }
         return null;
+    }
+
+    private String buildNomeCompleto(Utente utente) {
+        if (utente == null) {
+            return null;
+        }
+        String nome = utente.getNome();
+        String cognome = utente.getCognome();
+        if ((nome == null || nome.isBlank()) && (cognome == null || cognome.isBlank())) {
+            String email = utente.getEmail();
+            return email != null ? email.split("@")[0] : "Utente";
+        }
+        StringBuilder fullName = new StringBuilder();
+        if (nome != null && !nome.isBlank()) {
+            fullName.append(capitalize(nome));
+        }
+        if (cognome != null && !cognome.isBlank()) {
+            if (fullName.length() > 0) {
+                fullName.append(" ");
+            }
+            fullName.append(capitalize(cognome));
+        }
+        return fullName.toString();
+    }
+
+    private String capitalize(String text) {
+        if (text == null || text.isBlank()) {
+            return text;
+        }
+        String[] words = text.trim().split("\\s+");
+        StringBuilder builder = new StringBuilder();
+        for (String word : words) {
+            if (builder.length() > 0) {
+                builder.append(" ");
+            }
+            if (word.length() == 1) {
+                builder.append(word.toUpperCase());
+            } else {
+                builder.append(word.substring(0, 1).toUpperCase()).append(word.substring(1).toLowerCase());
+            }
+        }
+        return builder.toString();
     }
 }

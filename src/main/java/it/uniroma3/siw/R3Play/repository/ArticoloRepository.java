@@ -9,4 +9,7 @@ public interface ArticoloRepository extends CrudRepository<Articolo, Long> {
     
     // Spring Boot capirà in automatico questa query dal nome del metodo!
     List<Articolo> findByVenditore(Utente venditore);
+
+    // Ricerca per nome e descrizione, ignorando maiuscole/minuscole.
+    List<Articolo> findByNomeContainingIgnoreCaseOrDescrizioneContainingIgnoreCase(String nome, String descrizione);
 }

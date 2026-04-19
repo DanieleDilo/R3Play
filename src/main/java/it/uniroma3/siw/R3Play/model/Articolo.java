@@ -1,6 +1,7 @@
 package it.uniroma3.siw.R3Play.model;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -14,6 +15,11 @@ public class Articolo {
     private String descrizione;
     private Double prezzo;
     private String urlFoto;
+
+    @ElementCollection
+    @CollectionTable(name = "articolo_foto_urls", joinColumns = @JoinColumn(name = "articolo_id"))
+    @Column(name = "url_foto")
+    private List<String> fotoUrls = new ArrayList<>();
 
     @ManyToOne
     private Utente venditore;
@@ -59,6 +65,21 @@ public class Articolo {
 
     public void setUrlFoto(String urlFoto) {
         this.urlFoto = urlFoto;
+    }
+
+    public List<String> getFotoUrls() {
+        return fotoUrls;
+    }
+
+    public void setFotoUrls(List<String> fotoUrls) {
+        this.fotoUrls = fotoUrls;
+    }
+
+    public void addFotoUrl(String fotoUrl) {
+        if (this.fotoUrls == null) {
+            this.fotoUrls = new ArrayList<>();
+        }
+        this.fotoUrls.add(fotoUrl);
     }
 
     public Utente getVenditore() {

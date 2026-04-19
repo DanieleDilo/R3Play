@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>R3Play - Dettaglio Articolo</title>
     <link rel="stylesheet" href="/css/style.css">
-    
     <style>
         .container { max-width: 1000px; margin: 0 auto; padding: 20px; font-family: sans-serif; }
         header { border-bottom: 1px solid #eee; margin-bottom: 20px; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
@@ -14,6 +13,10 @@
         .product-main { display: flex; gap: 40px; align-items: flex-start; }
         .product-gallery { flex: 1; text-align: center; }
         .product-img { width: 100%; max-width: 450px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .gallery-thumbs { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 18px; }
+        .gallery-thumb { width: 90px; height: 90px; object-fit: cover; border-radius: 14px; cursor: pointer; border: 2px solid transparent; transition: border-color 0.2s ease; }
+        .gallery-thumb:hover { border-color: var(--primary); }
+        .product-placeholder { min-height: 320px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(109, 179, 63, 0.1), rgba(240, 173, 78, 0.1)); border-radius: 12px; color: #777; font-size: 0.95rem; padding: 1.5rem; }
         .product-details { flex: 1.2; }
         
         .price-tag { font-size: 2em; color: #2ecc71; font-weight: bold; margin: 10px 0; }
@@ -55,8 +58,20 @@
 
         <main class="product-main">
             <section class="product-gallery">
-                <img th:src="${articolo.urlFoto != null ? articolo.urlFoto : '/images/default.png'}" 
+                <img th:if="${articolo.fotoUrls != null and !#lists.isEmpty(articolo.fotoUrls)}" th:src="${articolo.fotoUrls.get(0)}"
                      alt="Immagine del prodotto" class="product-img">
+                <img th:if="${(articolo.fotoUrls == null or #lists.isEmpty(articolo.fotoUrls)) and articolo.urlFoto != null}" th:src="${articolo.urlFoto}"
+                     alt="Immagine del prodotto" class="product-img">
+                <div th:unless="${(articolo.fotoUrls != null and !#lists.isEmpty(articolo.fotoUrls)) or articolo.urlFoto != null}" class="product-placeholder">
+                    <span>Nessuna immagine disponibile</span>
+                </div>
+
+                <div class="gallery-thumbs" th:if="${articolo.fotoUrls != null and !#lists.isEmpty(articolo.fotoUrls)}">
+                    <img th:each="foto : ${articolo.fotoUrls}"
+                         th:src="${foto}"
+                         alt="Anteprima immagine"
+                         class="gallery-thumb">
+                </div>
             </section>
 
             <section class="product-details">
@@ -98,7 +113,7 @@
                             </p>
                         </div>
                         
-                        <div th:if="${emailLoggata != null and emailLoggata == rec.autore?.email}">
+                        <div th:if="${emailLoggata != null and rec.autore != null and emailLoggata == rec.autore.email}">
                             <a th:href="@{'/recensione/elimina/' + ${rec.id}}" 
                                class="delete-btn" 
                                onclick="return confirm('Sei sicuro di voler eliminare la tua recensione?')">
