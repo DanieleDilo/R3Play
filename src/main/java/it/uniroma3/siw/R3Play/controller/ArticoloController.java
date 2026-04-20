@@ -60,7 +60,7 @@ public class ArticoloController {
     public String mostraWelcome(Model model, @AuthenticationPrincipal Object principal) {
         Utente utenteLoggato = getUtenteLoggato(principal);
         if (utenteLoggato != null) {
-            model.addAttribute("nomeLoggato", buildNomeCompleto(utenteLoggato));
+            return "redirect:/vetrina";
         }
         return "welcome";
     }

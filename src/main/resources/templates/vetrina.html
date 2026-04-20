@@ -18,67 +18,59 @@
                 </div>
                 <div sec:authorize="isAuthenticated()">
                     <a th:href="@{/armadio}" class="btn btn-ghost">Il Mio Armadio</a>
-                    <a th:href="@{/articolo/nuovo}" class="btn btn-primary">Vendi</a>
-                    <form th:action="@{/logout}" method="post">
-                        <button type="submit" class="logout-button">Esci</button>
+                    <form th:action="@{/logout}" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-ghost">Esci</button>
                     </form>
                 </div>
             </div>
         </div>
     </nav>
 
-    <section class="section">
-        <div class="container">
-            <div class="hero">
-                <span class="text-center" style="display: block; color: var(--primary); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: var(--spacing-md);">🏆 Marketplace Sportivo Premium</span>
-                <h1 class="hero-title" th:if="${nomeLoggato != null}" th:text="'Bentornato, ' + ${nomeLoggato}">Bentornato, atleta!</h1>
-                <h1 class="hero-title" th:unless="${nomeLoggato != null}">Scopri la tua prossima attrezzatura sportiva</h1>
-                <p class="hero-subtitle">Ogni annuncio può contenere più immagini, descrizioni precise e un design minimale per attirare solo clienti seri. Qui trovi esclusivamente le funzionalità utili per vendere, acquistare e gestire i tuoi annunci.</p>
-                <div class="hero-actions">
-                    <a th:href="@{/articolo/nuovo}" class="btn btn-primary">Pubblica un annuncio</a>
-                    <a th:href="@{/armadio}" class="btn btn-ghost">Il Mio Armadio</a>
-                </div>
-            </div>
+    <section class="page-hero compact-hero">
+        <h1 class="section-title" th:if="${nomeLoggato != null}" th:text="'Bentornato, ' + ${nomeLoggato}">Bentornato, atleta!</h1>
+        <h1 class="section-title" th:unless="${nomeLoggato != null}">Scopri la tua prossima attrezzatura sportiva</h1>
+        <p>Annunci più compatti, ricerca immediata e un'esperienza ordinata per trovare la tua attrezzatura in un attimo.</p>
+        <div sec:authorize="isAuthenticated()" class="hero-actions-bottom">
+            <a th:href="@{/articolo/nuovo}" class="btn btn-primary">Vendi</a>
+        </div>
+    </section>
 
-            <div class="search-form">
-                <form th:action="@{/vetrina}" method="get">
-                    <input type="text" name="q" placeholder="Cerca articoli o descrizioni..." th:value="${query}" class="search-input">
-                    <button type="submit" class="search-button">Cerca</button>
-                </form>
-            </div>
+    <div class="container">
+        <div class="search-form compact-search">
+            <form th:action="@{/vetrina}" method="get" class="search-row">
+                <input type="text" name="q" placeholder="Cerca articoli o descrizioni..." th:value="${query}" class="search-input">
+                <button type="submit" class="search-button">Cerca</button>
+            </form>
+        </div>
 
-            <div th:if="${risultatiFiltro}" class="text-center mb-4">
-                <p style="color: var(--primary); font-weight: 600; margin: 0;" th:text="'Risultati per: ' + ${query}"></p>
-            </div>
+        <div th:if="${risultatiFiltro}" class="text-center mb-4">
+            <p style="color: var(--primary); font-weight: 600; margin: 0;" th:text="'Risultati per: ' + ${query}"></p>
+        </div>
 
-            <div class="grid" th:if="${not #lists.isEmpty(articoli)}">
-                <div class="product-card" th:each="articolo : ${articoli}">
-                    <img th:if="${articolo.urlFoto != null}" th:src="${articolo.urlFoto}" alt="Foto Articolo" class="product-image">
-                    <div th:unless="${articolo.urlFoto != null}" class="product-image" style="display: flex; align-items: center; justify-content: center; background: linear-gradient(45deg, var(--primary), var(--secondary)); color: white; font-size: 1.2rem; font-weight: 600;">📷 Nessuna Foto</div>
-                    <div class="product-content">
-                        <h3 class="product-title" th:text="${articolo.nome}">Nome Articolo</h3>
-                        <p class="product-price" th:text="${#numbers.formatDecimal(articolo.prezzo, 1, 2)} + ' €'">0.00 €</p>
-                        <p class="product-description" th:text="${articolo.descrizione}">Descrizione breve...</p>
-                        <div class="product-meta">
-                            <span th:if="${articolo.venditore != null}" th:text="'Venditore: ' + ${articolo.venditore.nome}"></span>
-                            <a th:href="@{'/articolo/' + ${articolo.id}}" style="color: var(--primary); font-weight: 500;">Visualizza</a>
-                        </div>
-                        <div th:if="${emailLoggata != null and articolo.venditore != null and emailLoggata == articolo.venditore.email}" class="mt-3">
-                            <a th:href="@{'/articolo/modifica/' + ${articolo.id}}" class="btn btn-secondary" style="width: 100%;">Modifica</a>
-                        </div>
+        <div class="grid compact-grid" th:if="${not #lists.isEmpty(articoli)}">
+            <div class="product-card compact-card" th:each="articolo : ${articoli}">
+                <img th:if="${articolo.urlFoto != null}" th:src="${articolo.urlFoto}" alt="Foto Articolo" class="product-image compact-image">
+                <div th:unless="${articolo.urlFoto != null}" class="product-image compact-image placeholder-image">📷 Nessuna Foto</div>
+                <div class="product-content compact-content">
+                    <h3 class="product-title" th:text="${articolo.nome}">Nome Articolo</h3>
+                    <p class="product-price" th:text="${#numbers.formatDecimal(articolo.prezzo, 1, 2)} + ' €'">0.00 €</p>
+                    <p class="product-description compact-description" th:text="${articolo.descrizione}">Descrizione breve...</p>
+                    <div class="product-meta">
+                        <span th:if="${articolo.venditore != null}" th:text="'Venditore: ' + ${articolo.venditore.nome}"></span>
+                        <a th:href="@{'/articolo/' + ${articolo.id}}" class="btn-link">Visualizza</a>
+                    </div>
+                    <div th:if="${emailLoggata != null and articolo.venditore != null and emailLoggata == articolo.venditore.email}" class="mt-3">
+                        <a th:href="@{'/articolo/modifica/' + ${articolo.id}}" class="btn btn-secondary compact-btn">Modifica</a>
                     </div>
                 </div>
             </div>
-
-            <div th:if="${#lists.isEmpty(articoli)}" class="text-center" style="padding: var(--spacing-xxl); background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow); border: 1px solid var(--border);">
-                <h3 style="color: var(--primary); margin-bottom: var(--spacing-md);">Non ci sono articoli disponibili</h3>
-                <p style="color: var(--text-light); margin-bottom: var(--spacing-lg);">Sii il primo a pubblicare un annuncio e dai il via alla community sportiva!</p>
-                <a th:href="@{/articolo/nuovo}" class="btn btn-primary">Pubblica il primo articolo</a>
-            </div>
         </div>
-    </section>
-</body>
-</html>
 
+        <div th:if="${#lists.isEmpty(articoli)}" class="text-center empty-state">
+            <h3>Non ci sono articoli disponibili</h3>
+            <p>Sii il primo a pubblicare un annuncio e dai il via alla community sportiva!</p>
+            <a th:href="@{/articolo/nuovo}" class="btn btn-primary">Pubblica il primo articolo</a>
+        </div>
+    </div>
 </body>
 </html>

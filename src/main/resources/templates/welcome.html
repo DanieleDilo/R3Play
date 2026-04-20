@@ -11,62 +11,23 @@
     <nav class="navbar">
         <div class="navbar-content">
             <a th:href="@{/}" class="logo">R3Play</a>
-            <div class="nav-actions">
-                <a th:href="@{/vetrina}" class="btn btn-ghost">Esplora</a>
-                <a th:href="@{/login}" class="btn btn-primary">Accedi</a>
-                <a th:href="@{/registrati}" class="btn btn-secondary">Registrati</a>
-            </div>
         </div>
     </nav>
 
-    <section class="section">
-        <div class="container">
-            <div class="hero">
-                <span class="text-center" style="display: block; color: var(--primary); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: var(--spacing-md);">🏆 Marketplace Sportivo Premium</span>
-                <h1 class="hero-title" th:if="${nomeLoggato != null}" th:text="'Bentornato, ' + ${nomeLoggato} + '!'">Benvenuto nel futuro dello sport!</h1>
-                <h1 class="hero-title" th:unless="${nomeLoggato != null}">R3Play: La tua piattaforma sportiva definitiva</h1>
-                <p class="hero-subtitle">Scopri, vendi e scambia attrezzature sportive di qualità premium. Condividi le tue esperienze, costruisci la tua reputazione e fai parte di una community appassionata di atleti e sportivi.</p>
-                <div class="hero-actions">
-                    <a th:href="@{/vetrina}" class="btn btn-secondary">🌟 Scopri la vetrina</a>
-                    <a th:href="@{/login}" class="btn btn-primary">🚀 Inizia ora</a>
-                    <a th:href="@{/registrati}" class="btn btn-ghost">✨ Unisciti gratis</a>
-                </div>
-            </div>
-
-            <div class="grid grid-3">
-                <div class="card">
-                    <div class="card-content text-center">
-                        <h3 style="color: var(--primary); margin-bottom: var(--spacing-md);">🛍️ Marketplace Intelligente</h3>
-                        <p class="card-text">Compra e vendi attrezzature sportive con un sistema di recensioni integrato e pagamenti sicuri.</p>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-content text-center">
-                        <h3 style="color: var(--primary); margin-bottom: var(--spacing-md);">📸 Galleria Fotografica</h3>
-                        <p class="card-text">Carica fino a 5 foto per articolo per mostrare ogni dettaglio e attirare i compratori ideali.</p>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-content text-center">
-                        <h3 style="color: var(--primary); margin-bottom: var(--spacing-md);">👥 Community Attiva</h3>
-                        <p class="card-text">Unisciti a migliaia di sportivi, lascia recensioni e costruisci la tua reputazione nel mondo dello sport.</p>
-                    </div>
-                </div>
-            </div>
+    <section class="page-hero welcome-hero">
+        <div class="floating-elements">
+            <div class="floating-circle"></div>
+            <div class="floating-circle small"></div>
+            <div class="floating-triangle"></div>
+        </div>
+        <h1 class="section-title" th:if="${nomeLoggato != null}" th:text="'Bentornato, ' + ${nomeLoggato} + '!'">R3Play</h1>
+        <h1 class="section-title" th:unless="${nomeLoggato != null}">R3Play</h1>
+        <p>La tua piattaforma sportiva definitiva con design innovativo</p>
+        <div class="hero-actions">
+            <a th:href="@{/vetrina}" class="btn btn-ghost">Esplora</a>
+            <a th:href="@{/login}" class="btn btn-primary">Accedi</a>
+            <a th:href="@{/registrati}" class="btn btn-secondary">Registrati</a>
         </div>
     </section>
-</body>
-</html>
-                <div class="feature-card">
-                    <h3>📱 Esperienza Mobile</h3>
-                    <p>Gestisci il tuo armadio sportivo ovunque, in qualsiasi momento, con un design responsive.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>🔒 Sicurezza Garantita</h3>
-                    <p>Transazioni protette, profili verificati e un sistema di moderazione attivo per la tua tranquillità.</p>
-                </div>
-            </section>
-        </main>
-    </div>
 </body>
 </html>
