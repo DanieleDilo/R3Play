@@ -2,45 +2,64 @@
 <html lang="it" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Accedi - R3Play</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body class="auth-shell fade-in-up">
-    <div class="auth-card">
-        <h2>R3Play 🏀</h2>
-        <p>Bentornato! Accedi al tuo account.</p>
-
-        <div th:if="${param.error}" class="alert-error">
-            Email o Password errati. Riprova.
-        </div>
-        <div th:if="${param.logout}" class="alert-success">
-            Ti sei disconnesso con successo.
-        </div>
-        <div th:if="${param.registrato}" class="alert-success">
-            Registrazione completata! Ora puoi accedere.
-        </div>
-
-        <form th:action="@{/login}" method="POST">
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required placeholder="tu@email.com">
+<body class="fade-in">
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a th:href="@{/}" class="logo">R3Play</a>
+            <div class="nav-actions">
+                <a th:href="@{/vetrina}" class="btn btn-ghost">Esplora</a>
+                <a th:href="@{/registrati}" class="btn btn-secondary">Registrati</a>
             </div>
+        </div>
+    </nav>
 
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required placeholder="••••••••">
+    <section class="section">
+        <div class="container">
+            <div class="auth-form">
+                <h1 class="auth-title">Bentornato</h1>
+                <p class="auth-subtitle">Accedi al tuo account per continuare</p>
+
+                <div th:if="${param.error}" style="background: #fee; color: #c33; padding: var(--spacing-md); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg); border: 1px solid #fcc;">
+                    Email o password errati. Riprova.
+                </div>
+                <div th:if="${param.logout}" style="background: #efe; color: #363; padding: var(--spacing-md); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg); border: 1px solid #cfc;">
+                    Ti sei disconnesso con successo.
+                </div>
+                <div th:if="${param.registrato}" style="background: #efe; color: #363; padding: var(--spacing-md); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg); border: 1px solid #cfc;">
+                    Registrazione completata! Ora puoi accedere.
+                </div>
+
+                <form th:action="@{/login}" method="POST">
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" id="email" name="email" required placeholder="tu@email.com" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" id="password" name="password" required placeholder="••••••••" class="form-input">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Accedi</button>
+                </form>
+
+                <div style="text-align: center; margin: var(--spacing-lg) 0; position: relative;">
+                    <span style="background: var(--surface); padding: 0 var(--spacing-sm); color: var(--text-light); font-size: 0.875rem;">oppure</span>
+                    <hr style="border: none; border-top: 1px solid var(--border); margin: 0; position: absolute; top: 50%; left: 0; right: 0; z-index: -1;">
+                </div>
+
+                <a th:href="@{/oauth2/authorization/google}" class="btn btn-secondary" style="width: 100%; background: #4285f4; color: white;">Accedi con Google</a>
+
+                <p class="text-center mt-4" style="color: var(--text-light);">
+                    Non hai un account? <a th:href="@{/registrati}" style="color: var(--primary); font-weight: 500;">Registrati ora</a>
+                </p>
             </div>
-
-            <button type="submit" class="btn-submit">Accedi</button>
-        </form>
-
-        <div class="divider"><span>OPPURE</span></div>
-
-        <a th:href="@{/oauth2/authorization/google}" class="btn-google">Accedi con Google</a>
-
-        <p class="help-text">
-            Non hai un account? <a th:href="@{/registrati}" class="btn-link">Registrati ora</a>
-        </p>
-    </div>
+        </div>
+    </section>
 </body>
 </html>

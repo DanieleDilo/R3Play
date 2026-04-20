@@ -2,44 +2,59 @@
 <html lang="it" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrati - R3Play</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body class="auth-shell fade-in-up">
-    <div class="auth-card">
-        <h2>Unisciti a R3Play 🚀</h2>
-        <p>Crea il tuo account in pochi secondi.</p>
-
-        <div th:if="${errore != null}" class="alert-error" th:text="${errore}"></div>
-
-        <form th:action="@{/registrati}" th:object="${utente}" method="POST">
-
-            <div class="form-group">
-                <label for="nome">Nome:</label>
-                <input type="text" id="nome" th:field="*{nome}" required>
+<body class="fade-in">
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a th:href="@{/}" class="logo">R3Play</a>
+            <div class="nav-actions">
+                <a th:href="@{/vetrina}" class="btn btn-ghost">Esplora</a>
+                <a th:href="@{/login}" class="btn btn-secondary">Accedi</a>
             </div>
+        </div>
+    </nav>
 
-            <div class="form-group">
-                <label for="cognome">Cognome:</label>
-                <input type="text" id="cognome" th:field="*{cognome}" required>
+    <section class="section">
+        <div class="container">
+            <div class="auth-form">
+                <h1 class="auth-title">Unisciti a R3Play</h1>
+                <p class="auth-subtitle">Crea il tuo account e inizia a scambiare attrezzature sportive</p>
+
+                <div th:if="${errore != null}" style="background: #fee; color: #c33; padding: var(--spacing-md); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg); border: 1px solid #fcc;" th:text="${errore}"></div>
+
+                <form th:action="@{/registrati}" th:object="${utente}" method="POST">
+                    <div class="form-group">
+                        <label for="nome" class="form-label">Nome</label>
+                        <input type="text" id="nome" th:field="*{nome}" required placeholder="Il tuo nome" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cognome" class="form-label">Cognome</label>
+                        <input type="text" id="cognome" th:field="*{cognome}" required placeholder="Il tuo cognome" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" id="email" th:field="*{email}" required placeholder="tu@email.com" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" id="password" th:field="*{password}" required placeholder="••••••••" class="form-input">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Registrami</button>
+                </form>
+
+                <p class="text-center mt-4" style="color: var(--text-light);">
+                    Hai già un account? <a th:href="@{/login}" style="color: var(--primary); font-weight: 500;">Accedi ora</a>
+                </p>
             </div>
-
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" th:field="*{email}" required>
-            </div>
-
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" th:field="*{password}" required>
-            </div>
-
-            <button type="submit" class="btn-submit">Registrami</button>
-        </form>
-
-        <p class="help-text">
-            Hai già un account? <a th:href="@{/login}" class="btn-link">Torna al Login</a>
-        </p>
-    </div>
+        </div>
+    </section>
 </body>
 </html>

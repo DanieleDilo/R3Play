@@ -2,49 +2,125 @@
 <html lang="it" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>R3Play - Dettaglio Articolo</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body class="fade-in-up">
+<body class="fade-in">
     <nav class="navbar">
-        <a th:href="@{/}" class="logo">R3Play</a>
-        <div class="nav-actions">
-            <a th:href="@{/vetrina}" class="btn btn-ghost">Vetrina</a>
-            <div sec:authorize="isAnonymous()">
-                <a th:href="@{/login}" class="btn btn-secondary">Accedi</a>
-                <a th:href="@{/registrati}" class="btn btn-ghost">Registrati</a>
-            </div>
-            <div sec:authorize="isAuthenticated()">
-                <a th:href="@{/armadio}" class="btn btn-ghost">Il Mio Armadio</a>
-                <form th:action="@{/logout}" method="post">
-                    <button type="submit" class="logout-button">Esci</button>
-                </form>
+        <div class="navbar-content">
+            <a th:href="@{/}" class="logo">R3Play</a>
+            <div class="nav-actions">
+                <a th:href="@{/vetrina}" class="btn btn-ghost">Vetrina</a>
+                <div sec:authorize="isAnonymous()">
+                    <a th:href="@{/login}" class="btn btn-secondary">Accedi</a>
+                    <a th:href="@{/registrati}" class="btn btn-ghost">Registrati</a>
+                </div>
+                <div sec:authorize="isAuthenticated()">
+                    <a th:href="@{/armadio}" class="btn btn-ghost">Il Mio Armadio</a>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="logout-button">Esci</button>
+                    </form>
+                </div>
             </div>
         </div>
     </nav>
 
-    <div class="container">
-        <div class="back-link">
-            <a th:href="@{/vetrina}">← Torna alla Vetrina</a>
+    <section class="section">
+        <div class="container">
+            <a th:href="@{/vetrina}" style="color: var(--primary); font-weight: 500; display: inline-flex; align-items: center; gap: var(--spacing-xs); margin-bottom: var(--spacing-lg);">
+                ← Torna alla Vetrina
+            </a>
+
+            <div class="grid-2">
+                <div class="card">
+                    <img th:if="${articolo.fotoUrls != null and !#lists.isEmpty(articolo.fotoUrls)}" th:src="${articolo.fotoUrls.get(0)}" alt="Immagine del prodotto" class="card-image">
+                    <img th:if="${(articolo.fotoUrls == null or #lists.isEmpty(articolo.fotoUrls)) and articolo.urlFoto != null}" th:src="${articolo.urlFoto}" alt="Immagine del prodotto" class="card-image">
+                    <div th:unless="${(articolo.fotoUrls != null and !#lists.isEmpty(articolo.fotoUrls)) or articolo.urlFoto != null}" class="card-image" style="display: flex; align-items: center; justify-content: center; background: linear-gradient(45deg, var(--primary), var(--secondary)); color: white; font-size: 1.2rem; font-weight: 600;">
+                        📷 Nessuna immagine disponibile
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-content">
+                        <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: var(--spacing-sm); color: var(--text);" th:text="${articolo.nome}">Nome Articolo di Esempio</h1>
+
+                        <p style="font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-bottom: var(--spacing-lg);" th:text="${#numbers.formatDecimal(articolo.prezzo, 1, 2)} + ' €'">0.00 €</p>
+
+                        <div style="margin-bottom: var(--spacing-lg);">
+                            <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: var(--spacing-sm); color: var(--text);">Descrizione</h3>
+                            <p style="color: var(--text-light); line-height: 1.6;" th:text="${articolo.descrizione}">Questa è una descrizione segnaposto...</p>
+                        </div>
+
+                        <div style="background: var(--surface-dark); padding: var(--spacing-md); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg);">
+                            <strong style="color: var(--text);">Venditore:</strong>
+                            <span style="color: var(--text-light);" th:text="${articolo.venditore != null ? articolo.venditore.nome + ' ' + articolo.venditore.cognome : 'Utente R3Play'}">Nome Venditore</span>
+                        </div>
+
+                        <div sec:authorize="isAuthenticated()" style="margin-top: var(--spacing-lg);">
+                            <button class="btn btn-primary" style="width: 100%;">Contatta il venditore</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: var(--spacing-xl);">
+                <div class="card-content">
+                    <h3 style="color: var(--primary); margin-bottom: var(--spacing-lg);">Recensioni dei clienti</h3>
+
+                    <div th:if="${#lists.isEmpty(articolo.recensioni)}" class="text-center" style="padding: var(--spacing-xxl);">
+                        <p style="font-size: 3rem; margin-bottom: var(--spacing-md);">⭐</p>
+                        <p style="color: var(--text-light); margin-bottom: var(--spacing-sm);">Nessuna recensione per questo articolo.</p>
+                        <p style="color: var(--text-muted);">Sii il primo a condividere la tua opinione!</p>
+                    </div>
+
+                    <div th:each="rec : ${articolo.recensioni}" style="border-bottom: 1px solid var(--border); padding: var(--spacing-lg) 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <strong style="color: var(--text);" th:text="${rec.autore != null ? rec.autore.nome + ' ' + rec.autore.cognome : 'Anonimo'}">Autore</strong>
+                                <div style="color: var(--primary); font-weight: 600; margin: var(--spacing-xs) 0;">
+                                    <span th:text="${rec.valutazione}">5</span>/5 ⭐
+                                </div>
+                                <p style="color: var(--text-light); line-height: 1.6; margin: var(--spacing-sm) 0 0 0;" th:text="${rec.testo}">Ottimo prodotto...</p>
+                            </div>
+                            <div th:if="${emailLoggata != null and rec.autore != null and emailLoggata == rec.autore.email}">
+                                <a th:href="@{'/recensione/elimina/' + ${rec.id}}" class="btn btn-secondary" onclick="return confirm('Sei sicuro di voler eliminare la tua recensione?')">Elimina</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div sec:authorize="isAuthenticated()" style="margin-top: var(--spacing-xl); padding-top: var(--spacing-lg); border-top: 1px solid var(--border);">
+                        <h4 style="color: var(--text); margin-bottom: var(--spacing-md);">Lascia la tua recensione</h4>
+                        <form th:action="@{'/recensione/nuova/' + ${articolo.id}}" method="POST">
+                            <div class="form-group">
+                                <label for="valutazione" class="form-label">Valutazione</label>
+                                <select id="valutazione" name="valutazione" required class="form-input">
+                                    <option value="5">5 ⭐ - Eccellente</option>
+                                    <option value="4">4 ⭐ - Molto buono</option>
+                                    <option value="3">3 ⭐ - Buono</option>
+                                    <option value="2">2 ⭐ - Sufficiente</option>
+                                    <option value="1">1 ⭐ - Scarso</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="testo" class="form-label">Il tuo commento</label>
+                                <textarea id="testo" name="testo" rows="4" placeholder="Condividi la tua esperienza..." required class="form-textarea"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Invia recensione</button>
+                        </form>
+                    </div>
+
+                    <div sec:authorize="isAnonymous()" class="text-center" style="margin-top: var(--spacing-lg); padding: var(--spacing-lg); background: var(--surface-dark); border-radius: var(--radius-md);">
+                        <p style="color: var(--text-light); margin-bottom: var(--spacing-md);">Accedi per lasciare una recensione</p>
+                        <a th:href="@{/login}" class="btn btn-primary">Accedi</a>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <main class="product-main">
-            <section class="product-gallery">
-                <img th:if="${articolo.fotoUrls != null and !#lists.isEmpty(articolo.fotoUrls)}" th:src="${articolo.fotoUrls.get(0)}"
-                     alt="Immagine del prodotto" class="product-img">
-                <img th:if="${(articolo.fotoUrls == null or #lists.isEmpty(articolo.fotoUrls)) and articolo.urlFoto != null}" th:src="${articolo.urlFoto}"
-                     alt="Immagine del prodotto" class="product-img">
-                <div th:unless="${(articolo.fotoUrls != null and !#lists.isEmpty(articolo.fotoUrls)) or articolo.urlFoto != null}" class="product-placeholder">
-                    <span>Nessuna immagine disponibile</span>
-                </div>
-
-                <div class="gallery-thumbs" th:if="${articolo.fotoUrls != null and !#lists.isEmpty(articolo.fotoUrls)}">
-                    <img th:each="foto : ${articolo.fotoUrls}"
-                         th:src="${foto}"
-                         alt="Anteprima immagine"
-                         class="gallery-thumb">
-                </div>
-            </section>
+    </section>
+</body>
+</html>
 
             <section class="product-details">
                 <h1 th:text="${articolo.nome}">Nome Articolo di Esempio</h1>
@@ -53,20 +129,20 @@
                     <span th:text="${articolo.prezzo}">0.00</span> €
                 </p>
 
-                <p><strong>Descrizione:</strong></p>
+                <p><strong>📝 Descrizione:</strong></p>
                 <p th:text="${articolo.descrizione}" class="description-text">
                     Questa è una descrizione segnaposto...
                 </p>
 
                 <div class="seller-info">
-                   <strong>Venditore:</strong>
+                   <strong>👤 Venditore:</strong>
                    <span th:text="${articolo.venditore != null ? articolo.venditore.nome + ' ' + articolo.venditore.cognome : 'Utente R3Play'}">Nome Venditore</span>
                 </div>
 
                 <div class="section-divider"></div>
 
                 <section class="reviews-section">
-                    <h3>Recensioni dei clienti R3Play</h3>
+                    <h3>⭐ Recensioni dei clienti R3Play</h3>
 
                     <div th:if="${#lists.isEmpty(articolo.recensioni)}" class="empty-state">
                         <p class="review-empty-star">⭐</p>
@@ -78,7 +154,7 @@
                         <div class="review-content">
                             <p>
                                 <strong th:text="${rec.autore != null ? rec.autore.nome + ' ' + rec.autore.cognome : 'Anonimo'}">Autore</strong>
-                                — Voto: <span th:text="${rec.valutazione}" class="rating">5</span> / 5
+                                — Valutazione: <span th:text="${rec.valutazione}" class="rating">5</span> / 5 ⭐
                             </p>
                             <p th:text="${rec.testo}" class="review-text">
                                 Ottimo prodotto...
@@ -88,17 +164,15 @@
                         <div th:if="${emailLoggata != null and rec.autore != null and emailLoggata == rec.autore.email}">
                             <a th:href="@{'/recensione/elimina/' + ${rec.id}}"
                                class="btn btn-delete"
-                               onclick="return confirm('Sei sicuro di voler eliminare la tua recensione?')">
-                               Elimina
-                            </a>
+                               onclick="return confirm('Sei sicuro di voler eliminare la tua recensione?')">🗑️ Elimina</a>
                         </div>
                     </div>
                 </section>
 
                 <section class="form-box">
-                    <h3>Lascia la tua recensione</h3>
+                    <h3>💬 Lascia la tua recensione</h3>
                     <p class="help-text">
-                        Aiuta gli altri utenti a fare una scelta informata.
+                        Aiuta gli altri utenti a fare una scelta informata condividendo la tua esperienza.
                     </p>
 
                     <form th:action="@{'/articolo/' + ${articolo.id} + '/recensione'}"
@@ -106,24 +180,24 @@
                           method="POST">
 
                         <div class="form-group">
-                            <label>La tua valutazione:</label>
-                            <select th:field="*{valutazione}" required>
+                            <label>⭐ La tua valutazione:</label>
+                            <select th:field="*{valutazione}" required style="background: var(--surface);">
                                 <option value="" disabled selected>Scegli un punteggio...</option>
-                                <option value="5">⭐⭐⭐⭐⭐ (Eccellente)</option>
-                                <option value="4">⭐⭐⭐⭐ (Buono)</option>
-                                <option value="3">⭐⭐⭐ (Sufficiente)</option>
-                                <option value="2">⭐⭐ (Scarso)</option>
-                                <option value="1">⭐ (Pessimo)</option>
+                                <option value="5">⭐⭐⭐⭐⭐ (Eccellente - 5 stelle)</option>
+                                <option value="4">⭐⭐⭐⭐ (Buono - 4 stelle)</option>
+                                <option value="3">⭐⭐⭐ (Sufficiente - 3 stelle)</option>
+                                <option value="2">⭐⭐ (Scarso - 2 stelle)</option>
+                                <option value="1">⭐ (Pessimo - 1 stella)</option>
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label>Cosa ne pensi?</label>
+                            <label>💭 Cosa ne pensi?</label>
                             <textarea th:field="*{testo}" rows="4" placeholder="Scrivi qui il tuo commento dettagliato..." required></textarea>
                         </div>
 
                         <div class="form-actions">
-                            <button type="submit" class="btn-submit">Pubblica Recensione</button>
+                            <button type="submit" class="btn-submit">📤 Pubblica Recensione</button>
                         </div>
                     </form>
                 </section>
