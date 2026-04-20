@@ -5,46 +5,32 @@
     <title>Vetrina - R3Play</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
+<body class="fade-in-up">
     <nav class="navbar">
-        <a th:href="@{/}" class="logo">R3Play 🏀</a>
+        <a th:href="@{/}" class="logo">R3Play</a>
         <div class="nav-actions">
-            <a th:href="@{/}" class="btn btn-ghost">Home</a>
-            <a th:href="@{/vetrina}" class="btn btn-ghost">Vetrina</a>
             <div sec:authorize="isAnonymous()">
                 <a th:href="@{/login}" class="btn btn-secondary">Accedi</a>
                 <a th:href="@{/registrati}" class="btn btn-ghost">Registrati</a>
             </div>
-            <div sec:authorize="isAuthenticated()" class="nav-actions">
+            <div sec:authorize="isAuthenticated()">
                 <a th:href="@{/armadio}" class="btn btn-ghost">Il Mio Armadio</a>
-                <a th:href="@{/articolo/nuovo}" class="btn btn-primary">+ Vendi</a>
-                <form th:action="@{/logout}" method="post" style="margin:0;">
-                    <button type="submit" class="btn btn-ghost">Esci</button>
+                <a th:href="@{/articolo/nuovo}" class="btn btn-primary">Vendi</a>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="logout-button">Esci</button>
                 </form>
             </div>
         </div>
     </nav>
 
-    <section class="hero">
-        <div>
-            <p class="eyebrow">Marketplace elegante per gli sportivi</p>
-            <h1 th:if="${nomeLoggato != null}" th:text="'Benvenuto, ' + ${nomeLoggato}">Benvenuto, atleta!</h1>
-            <h1 th:unless="${nomeLoggato != null}">Scopri la tua prossima attrezzatura sportiva.</h1>
-            <p>Ogni annuncio può contenere più immagini, descrizioni precise e soprattuto un look minimal ed elegante per attirare clienti seri. Qui trovi solo funzionalità reali, cliccabili e utili.</p>
-            <div class="actions" style="margin-top: 1.75rem;">
-                <a th:href="@{/articolo/nuovo}" class="btn btn-primary">Pubblica un annuncio</a>
-                <a th:href="@{/armadio}" class="btn btn-ghost">Vai al tuo armadio</a>
-            </div>
-        </div>
-        <div style="min-width: 320px; display: grid; gap: 1.25rem;">
-            <div class="feature-card">
-                <h3>Foto multiple</h3>
-                <p>Migliora ogni annuncio con una galleria fotografica completa dell'articolo.</p>
-            </div>
-            <div class="feature-card">
-                <h3>Gestione intuitiva</h3>
-                <p>Modifica articoli, segui le recensioni e controlla il tuo armadio con semplicità.</p>
-            </div>
+    <section class="page-hero">
+        <p class="eyebrow">Marketplace elegante per gli sportivi</p>
+        <h1 th:if="${nomeLoggato != null}" th:text="'Benvenuto, ' + ${nomeLoggato}">Benvenuto, atleta!</h1>
+        <h1 th:unless="${nomeLoggato != null}">Scopri la tua prossima attrezzatura sportiva.</h1>
+        <p>Ogni annuncio può contenere più immagini, descrizioni precise e un design minimale per attirare solo clienti seri. Qui trovi esclusivamente le funzionalità utili per vendere, acquistare e gestire i tuoi annunci.</p>
+        <div class="actions">
+            <a th:href="@{/articolo/nuovo}" class="btn btn-primary">Pubblica un annuncio</a>
+            <a th:href="@{/armadio}" class="btn btn-ghost">Il Mio Armadio</a>
         </div>
     </section>
 
@@ -65,14 +51,14 @@
                     <p class="card-desc" th:text="${articolo.descrizione}">Descrizione breve...</p>
                     <p class="card-prezzo" th:text="${articolo.prezzo} + ' €'">0.00 €</p>
                     <div th:if="${emailLoggata != null and articolo.venditore != null and emailLoggata == articolo.venditore.email}">
-                        <a th:href="@{'/articolo/modifica/' + ${articolo.id}}" class="btn-modifica">✏️ Modifica</a>
+                        <a th:href="@{'/articolo/modifica/' + ${articolo.id}}" class="btn btn-edit">Modifica</a>
                     </div>
-                    <a th:href="@{'/articolo/' + ${articolo.id}}" style="display: block; text-align: center; margin-top: 10px; color: #007bff; text-decoration: none;">Visualizza Dettaglio</a>
+                    <a th:href="@{'/articolo/' + ${articolo.id}}" class="card-link">Visualizza Dettaglio</a>
                 </div>
             </div>
         </div>
-        <div th:if="${#lists.isEmpty(articoli)}" style="text-align: center; color: #777; padding: 3rem 1rem; background: white; border-radius: 20px; box-shadow: var(--shadow);">
-            <h2>Nessun articolo disponibile</h2>
+        <div th:if="${#lists.isEmpty(articoli)}" class="empty-state">
+            <h3>Nessun articolo disponibile</h3>
             <p>Pubblica il primo annuncio per apparire nella vetrina.</p>
             <a th:href="@{/articolo/nuovo}" class="btn btn-primary">Pubblica un articolo</a>
         </div>

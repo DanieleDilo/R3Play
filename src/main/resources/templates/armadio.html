@@ -4,56 +4,15 @@
     <meta charset="UTF-8">
     <title>Il Mio Armadio - R3Play</title>
     <link rel="stylesheet" href="/css/style.css">
-    <style>
-        :root {
-            --primary: #6DB33F;
-            --secondary: #f0ad4e;
-            --dark: #333;
-            --light: #f4f7f6;
-        }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--light); margin: 0; padding: 0; }
-        
-        /* Navbar stile Dashboard */
-        .navbar { background: white; padding: 15px 50px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .logo { font-size: 1.5em; font-weight: bold; color: var(--primary); text-decoration: none; }
-        
-        .container { max-width: 1000px; margin: 30px auto; padding: 20px; }
-        
-        /* Sezione Profilo e Stats */
-        .user-header { background: white; padding: 30px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .user-info h1 { margin: 0; color: var(--dark); }
-        .stats-container { display: flex; gap: 30px; }
-        .stat-box { text-align: center; }
-        .stat-value { font-size: 1.8em; font-weight: bold; color: var(--primary); display: block; }
-        .stat-label { font-size: 0.9em; color: #777; }
-
-        /* Griglia Articoli */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
-        .item-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.08); transition: 0.3s; position: relative; }
-        .item-card:hover { transform: translateY(-5px); }
-        .item-img { width: 100%; height: 200px; object-fit: cover; }
-        .item-content { padding: 20px; }
-        .item-price { font-size: 1.3em; font-weight: bold; color: var(--primary); margin: 10px 0; }
-        
-        /* Pulsanti Azione */
-        .actions { display: flex; gap: 10px; margin-top: 15px; }
-        .btn { flex: 1; padding: 10px; text-align: center; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.9em; transition: 0.2s; }
-        .btn-edit { background-color: var(--secondary); color: white; }
-        .btn-edit:hover { background-color: #ec971f; }
-        .btn-delete { background-color: #d9534f; color: white; }
-        .btn-delete:hover { background-color: #c9302c; }
-        
-        .empty-state { text-align: center; padding: 50px; background: white; border-radius: 15px; color: #999; }
-    </style>
 </head>
-<body>
-
-   <nav class="navbar">
-        <a th:href="@{/}" class="logo">R3Play 🏀</a>
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <span th:text="${utente.nome} + ' ' + ${utente.cognome}" style="font-weight: bold; color: #333;">Nome Utente</span>
-            <form th:action="@{/logout}" method="post" style="margin: 0;">
-                <button type="submit" style="background: none; border: none; color: #888; cursor: pointer; text-decoration: underline; font-size: 1em;">Logout</button>
+<body class="fade-in-up">
+    <nav class="navbar">
+        <a th:href="@{/}" class="logo">R3Play</a>
+        <div class="nav-actions">
+            <a th:href="@{/vetrina}" class="btn btn-ghost">Vetrina</a>
+            <a th:href="@{/articolo/nuovo}" class="btn btn-primary">Vendi</a>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="logout-button">Esci</button>
             </form>
         </div>
     </nav>
@@ -61,7 +20,7 @@
     <div class="container">
         <div class="user-header">
             <div class="user-info">
-                <span style="color: var(--primary); font-weight: bold; text-transform: uppercase; font-size: 0.8em;">La tua Dashboard</span>
+                <span class="eyebrow">La tua Dashboard</span>
                 <h1 th:text="'Ciao, ' + ${utente.nome} + '!'">Ciao, Daniele!</h1>
             </div>
             <div class="stats-container">
@@ -76,20 +35,20 @@
             </div>
         </div>
 
-        <h2 style="margin-bottom: 20px; color: var(--dark);">I tuoi Annunci</h2>
+        <h2 class="section-title">I tuoi Annunci</h2>
 
         <div class="grid" th:if="${not #lists.isEmpty(mieiArticoli)}">
             <div class="item-card" th:each="art : ${mieiArticoli}">
                <img th:if="${art.urlFoto != null}" th:src="${art.urlFoto}" class="item-img" alt="Foto Prodotto">
                 <div th:unless="${art.urlFoto != null}" class="item-img placeholder">Nessuna Foto</div>
                 <div class="item-content">
-                    <h3 th:text="${art.nome}" style="margin:0;">Nome</h3>
+                    <h3 th:text="${art.nome}" class="item-title">Nome</h3>
                     <p class="item-price" th:text="${art.prezzo} + ' €'">0.00 €</p>
-                    
+
                     <div class="actions">
                         <a th:href="@{'/articolo/modifica/' + ${art.id}}" class="btn btn-edit">Modifica</a>
-                        <a th:href="@{'/articolo/elimina/' + ${art.id}}" 
-                            class="btn btn-delete" 
+                        <a th:href="@{'/articolo/elimina/' + ${art.id}}"
+                            class="btn btn-delete"
                             onclick="return confirm('Sei sicuro di voler eliminare questo annuncio?')">Elimina</a>
                     </div>
                 </div>
@@ -99,7 +58,7 @@
         <div class="empty-state" th:if="${#lists.isEmpty(mieiArticoli)}">
             <h3>Non hai ancora caricato nulla.</h3>
             <p>Inizia a vendere i tuoi articoli sportivi oggi stesso!</p>
-            <a th:href="@{/articolo/nuovo}" class="btn-edit" style="padding: 10px 20px; border-radius: 5px; text-decoration: none; color: white; display: inline-block; margin-top: 10px;">Vendi il primo articolo</a>
+            <a th:href="@{/articolo/nuovo}" class="btn btn-primary">Vendi il primo articolo</a>
         </div>
     </div>
 

@@ -5,50 +5,22 @@
     <title>Benvenuto - R3Play</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
+<body class="fade-in-up">
     <div class="welcome-shell">
         <nav class="navbar">
             <a th:href="@{/}" class="logo">R3Play</a>
-            <div class="nav-actions">
-                <div sec:authorize="isAnonymous()">
-                    <a th:href="@{/login}" class="btn btn-ghost">Accedi</a>
-                    <a th:href="@{/registrati}" class="btn btn-primary">Registrati</a>
-                </div>
-                <div sec:authorize="isAuthenticated()">
-                    <a th:href="@{/vetrina}" class="btn btn-ghost">Vetrina</a>
-                    <a th:href="@{/armadio}" class="btn btn-primary">Il Mio Armadio</a>
-                    <form th:action="@{/logout}" method="post" style="margin:0;">
-                        <button type="submit" class="btn btn-ghost">Esci</button>
-                    </form>
-                </div>
-            </div>
         </nav>
 
-        <main class="welcome-main">
+        <main class="welcome-main centered">
             <section class="welcome-hero">
                 <span class="eyebrow">Sport, scambio e stile</span>
                 <h1 th:if="${nomeLoggato != null}" th:text="'Benvenuto, ' + ${nomeLoggato} + '!'">Benvenuto, amigo!</h1>
                 <h1 th:unless="${nomeLoggato != null}">R3Play: il tuo marketplace sportivo.</h1>
                 <p>Con R3Play puoi vendere, scambiare e scoprire articoli sportivi professionali in un design elegante e moderno. Carica più foto per ogni annuncio, mostra gli articoli al meglio e gestisci il tuo armadio personale.</p>
-                <div class="actions" style="margin-top: 2rem;">
+                <div class="actions">
                     <a th:href="@{/vetrina}" class="btn btn-secondary">Scopri la vetrina</a>
                     <a th:href="@{/login}" class="btn btn-primary">Accedi</a>
                     <a th:href="@{/registrati}" class="btn btn-ghost">Registrati</a>
-                </div>
-            </section>
-
-            <section class="welcome-features">
-                <div class="feature-card">
-                    <h3>Carica articoli premium</h3>
-                    <p>Migliora ogni annuncio con più immagini, descrizioni chiare e prezzi competitivi.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>Gestione personalizzata</h3>
-                    <p>Controlla il tuo armadio, modifica annunci e segui le recensioni clienti.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>Esperienza elegante</h3>
-                    <p>Interfaccia moderna e scorrevole per offrire agli utenti una navigazione premium.</p>
                 </div>
             </section>
         </main>
