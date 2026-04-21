@@ -22,7 +22,6 @@
         </div>
         <h1 class="section-title" th:if="${nomeLoggato != null}" th:text="'Bentornato, ' + ${nomeLoggato} + '!'">R3Play</h1>
         <h1 class="section-title" th:unless="${nomeLoggato != null}">R3Play</h1>
-        <p>La tua piattaforma sportiva definitiva con design innovativo</p>
         <div class="hero-actions">
             <a th:href="@{/vetrina}" class="btn btn-ghost">Esplora</a>
             <a th:href="@{/login}" class="btn btn-primary">Accedi</a>

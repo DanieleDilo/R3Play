@@ -24,60 +24,41 @@
     <section class="section">
         <div class="container">
             <div class="hero">
-                <span class="text-center" style="display: block; color: var(--primary); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: var(--spacing-md);">Vendi con facilità</span>
-                <h1 class="hero-title">Metti in vendita il tuo articolo</h1>
-                <p class="hero-subtitle">Compila i dettagli principali e carica immagini di qualità. Più informazioni dai, più velocemente sarà venduto.</p>
+                <h1 class="hero-title">Vendi il tuo articolo</h1>
+                <p class="hero-subtitle">Compila i dettagli e carica le foto</p>
             </div>
 
-            <div class="grid-2">
-                <div class="card">
-                    <div class="card-content">
-                        <h3 style="color: var(--primary); margin-bottom: var(--spacing-md);">💡 Suggerimenti per un annuncio di successo</h3>
-                        <ul style="color: var(--text-light); line-height: 1.6;">
-                            <li>Usa un titolo chiaro e descrittivo</li>
-                            <li>Aggiungi foto da più angolazioni</li>
-                            <li>Specifica marca, modello e condizioni</li>
-                            <li>Indica un prezzo realistico</li>
-                            <li>Rispondi velocemente ai messaggi</li>
-                        </ul>
-                    </div>
-                </div>
+            <div class="card" style="max-width: 600px; margin: 0 auto;">
+                <div class="card-content">
+                    <form th:action="@{/articolo/nuovo}" th:object="${articolo}" method="POST" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="nome" class="form-label">Nome Articolo</label>
+                            <input type="text" id="nome" th:field="*{nome}" placeholder="Es. Racchetta da Tennis" required class="form-input">
+                        </div>
 
-                <div class="card">
-                    <div class="card-content">
-                        <form th:action="@{/articolo/nuovo}" th:object="${articolo}" method="POST" enctype="multipart/form-data">
-                            <div class="form-group">
-                                <label for="nome" class="form-label">Nome Articolo</label>
-                                <input type="text" id="nome" th:field="*{nome}" placeholder="Es. Racchetta da Tennis" required class="form-input">
-                            </div>
+                        <div class="form-group">
+                            <label for="descrizione" class="form-label">Descrizione</label>
+                            <textarea id="descrizione" th:field="*{descrizione}" rows="4" placeholder="Descrivi l'articolo..." required class="form-textarea"></textarea>
+                        </div>
 
-                            <div class="form-group">
-                                <label for="descrizione" class="form-label">Descrizione</label>
-                                <textarea id="descrizione" th:field="*{descrizione}" rows="4" placeholder="Condizioni, marca, dettagli..." required class="form-textarea"></textarea>
-                            </div>
+                        <div class="form-group">
+                            <label for="prezzo" class="form-label">Prezzo (€)</label>
+                            <input type="number" step="0.01" id="prezzo" th:field="*{prezzo}" placeholder="Es. 25.50" required class="form-input">
+                        </div>
 
-                            <div class="form-group">
-                                <label for="prezzo" class="form-label">Prezzo (€)</label>
-                                <input type="number" step="0.01" id="prezzo" th:field="*{prezzo}" placeholder="Es. 25.50" required class="form-input">
-                            </div>
+                        <div class="form-group">
+                            <label for="fileImmagine" class="form-label">Carica foto</label>
+                            <input type="file" id="fileImmagine" name="fileImmagine" accept="image/*" multiple class="form-input">
+                        </div>
 
-                            <div class="form-group">
-                                <label for="fileImmagine" class="form-label">Carica fino a 5 foto</label>
-                                <input type="file" id="fileImmagine" name="fileImmagine" accept="image/*" multiple class="form-input">
-                                <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: var(--spacing-xs);">Mostra l'articolo da più angolazioni per attirare più compratori.</p>
-                            </div>
-
-                            <div class="form-actions">
-                                <a th:href="@{/vetrina}" class="btn btn-ghost">Annulla</a>
-                                <button type="submit" class="btn btn-primary">Pubblica Annuncio</button>
-                            </div>
-                        </form>
-                    </div>
+                        <div class="form-actions">
+                            <a th:href="@{/vetrina}" class="btn btn-ghost">Annulla</a>
+                            <button type="submit" class="btn btn-primary">Pubblica</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </section>
 </body>
-</html>
-
 </html>

@@ -64,12 +64,10 @@
 
             <div class="card" style="margin-top: var(--spacing-xl);">
                 <div class="card-content">
-                    <h3 style="color: var(--primary); margin-bottom: var(--spacing-lg);">Recensioni dei clienti</h3>
+                    <h2 style="color: var(--primary); margin-bottom: var(--spacing-lg);">Recensioni</h2>
 
-                    <div th:if="${#lists.isEmpty(articolo.recensioni)}" class="text-center" style="padding: var(--spacing-xxl);">
-                        <p style="font-size: 3rem; margin-bottom: var(--spacing-md);">⭐</p>
-                        <p style="color: var(--text-light); margin-bottom: var(--spacing-sm);">Nessuna recensione per questo articolo.</p>
-                        <p style="color: var(--text-muted);">Sii il primo a condividere la tua opinione!</p>
+                    <div th:if="${#lists.isEmpty(articolo.recensioni)}" class="text-center" style="padding: var(--spacing-xl);">
+                        <p style="color: var(--text-light);">Ancora nessuna recensione.</p>
                     </div>
 
                     <div th:each="rec : ${articolo.recensioni}" style="border-bottom: 1px solid var(--border); padding: var(--spacing-lg) 0;">
@@ -77,34 +75,34 @@
                             <div>
                                 <strong style="color: var(--text);" th:text="${rec.autore != null ? rec.autore.nome + ' ' + rec.autore.cognome : 'Anonimo'}">Autore</strong>
                                 <div style="color: var(--primary); font-weight: 600; margin: var(--spacing-xs) 0;">
-                                    <span th:text="${rec.valutazione}">5</span>/5 ⭐
+                                    <span th:text="${rec.valutazione}">5</span>/5
                                 </div>
-                                <p style="color: var(--text-light); line-height: 1.6; margin: var(--spacing-sm) 0 0 0;" th:text="${rec.testo}">Ottimo prodotto...</p>
+                                <p style="color: var(--text-light); line-height: 1.6; margin: var(--spacing-sm) 0 0 0;" th:text="${rec.testo}">Testo recensione...</p>
                             </div>
                             <div th:if="${emailLoggata != null and rec.autore != null and emailLoggata == rec.autore.email}">
-                                <a th:href="@{'/recensione/elimina/' + ${rec.id}}" class="btn btn-secondary" onclick="return confirm('Sei sicuro di voler eliminare la tua recensione?')">Elimina</a>
+                                <a th:href="@{'/recensione/elimina/' + ${rec.id}}" class="btn btn-secondary" onclick="return confirm('Sei sicuro?')">Elimina</a>
                             </div>
                         </div>
                     </div>
 
                     <div sec:authorize="isAuthenticated()" style="margin-top: var(--spacing-xl); padding-top: var(--spacing-lg); border-top: 1px solid var(--border);">
-                        <h4 style="color: var(--text); margin-bottom: var(--spacing-md);">Lascia la tua recensione</h4>
+                        <h4 style="color: var(--text); margin-bottom: var(--spacing-md);">Lascia una recensione</h4>
                         <form th:action="@{'/recensione/nuova/' + ${articolo.id}}" method="POST">
                             <div class="form-group">
                                 <label for="valutazione" class="form-label">Valutazione</label>
                                 <select id="valutazione" name="valutazione" required class="form-input">
-                                    <option value="5">5 ⭐ - Eccellente</option>
-                                    <option value="4">4 ⭐ - Molto buono</option>
-                                    <option value="3">3 ⭐ - Buono</option>
-                                    <option value="2">2 ⭐ - Sufficiente</option>
-                                    <option value="1">1 ⭐ - Scarso</option>
+                                    <option value="5">5 stelle</option>
+                                    <option value="4">4 stelle</option>
+                                    <option value="3">3 stelle</option>
+                                    <option value="2">2 stelle</option>
+                                    <option value="1">1 stella</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label for="testo" class="form-label">Il tuo commento</label>
-                                <textarea id="testo" name="testo" rows="4" placeholder="Condividi la tua esperienza..." required class="form-textarea"></textarea>
+                                <textarea id="testo" name="testo" rows="3" required class="form-textarea"></textarea>
                             </div>
-                            <button type="submit" class="btn btn-primary">Invia recensione</button>
+                            <button type="submit" class="btn btn-primary">Invia</button>
                         </form>
                     </div>
 
@@ -116,91 +114,5 @@
             </div>
         </div>
     </section>
-</body>
-</html>
-
-            <section class="product-details">
-                <h1 th:text="${articolo.nome}">Nome Articolo di Esempio</h1>
-
-                <p class="price-tag">
-                    <span th:text="${articolo.prezzo}">0.00</span> €
-                </p>
-
-                <p><strong>📝 Descrizione:</strong></p>
-                <p th:text="${articolo.descrizione}" class="description-text">
-                    Questa è una descrizione segnaposto...
-                </p>
-
-                <div class="seller-info">
-                   <strong>👤 Venditore:</strong>
-                   <span th:text="${articolo.venditore != null ? articolo.venditore.nome + ' ' + articolo.venditore.cognome : 'Utente R3Play'}">Nome Venditore</span>
-                </div>
-
-                <div class="section-divider"></div>
-
-                <section class="reviews-section">
-                    <h3>⭐ Recensioni dei clienti R3Play</h3>
-
-                    <div th:if="${#lists.isEmpty(articolo.recensioni)}" class="empty-state">
-                        <p class="review-empty-star">⭐</p>
-                        <p>Nessuna recensione per questo articolo.</p>
-                        <p>Sii il primo a condividere la tua opinione!</p>
-                    </div>
-
-                    <div th:each="rec : ${articolo.recensioni}" class="review-card">
-                        <div class="review-content">
-                            <p>
-                                <strong th:text="${rec.autore != null ? rec.autore.nome + ' ' + rec.autore.cognome : 'Anonimo'}">Autore</strong>
-                                — Valutazione: <span th:text="${rec.valutazione}" class="rating">5</span> / 5 ⭐
-                            </p>
-                            <p th:text="${rec.testo}" class="review-text">
-                                Ottimo prodotto...
-                            </p>
-                        </div>
-
-                        <div th:if="${emailLoggata != null and rec.autore != null and emailLoggata == rec.autore.email}">
-                            <a th:href="@{'/recensione/elimina/' + ${rec.id}}"
-                               class="btn btn-delete"
-                               onclick="return confirm('Sei sicuro di voler eliminare la tua recensione?')">🗑️ Elimina</a>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="form-box">
-                    <h3>💬 Lascia la tua recensione</h3>
-                    <p class="help-text">
-                        Aiuta gli altri utenti a fare una scelta informata condividendo la tua esperienza.
-                    </p>
-
-                    <form th:action="@{'/articolo/' + ${articolo.id} + '/recensione'}"
-                          th:object="${recensione}"
-                          method="POST">
-
-                        <div class="form-group">
-                            <label>⭐ La tua valutazione:</label>
-                            <select th:field="*{valutazione}" required style="background: var(--surface);">
-                                <option value="" disabled selected>Scegli un punteggio...</option>
-                                <option value="5">⭐⭐⭐⭐⭐ (Eccellente - 5 stelle)</option>
-                                <option value="4">⭐⭐⭐⭐ (Buono - 4 stelle)</option>
-                                <option value="3">⭐⭐⭐ (Sufficiente - 3 stelle)</option>
-                                <option value="2">⭐⭐ (Scarso - 2 stelle)</option>
-                                <option value="1">⭐ (Pessimo - 1 stella)</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label>💭 Cosa ne pensi?</label>
-                            <textarea th:field="*{testo}" rows="4" placeholder="Scrivi qui il tuo commento dettagliato..." required></textarea>
-                        </div>
-
-                        <div class="form-actions">
-                            <button type="submit" class="btn-submit">📤 Pubblica Recensione</button>
-                        </div>
-                    </form>
-                </section>
-
-            </section>
-        </main>
-    </div>
 </body>
 </html>

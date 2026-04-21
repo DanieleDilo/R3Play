@@ -7,8 +7,6 @@
     <link rel="stylesheet" href="/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body>
-
 <body class="fade-in">
     <nav class="navbar">
         <div class="navbar-content">
@@ -19,7 +17,7 @@
                     <a th:href="@{/registrati}" class="btn btn-ghost">Registrati</a>
                 </div>
                 <div sec:authorize="isAuthenticated()">
-                    <a th:href="@{/armadio}" class="btn btn-ghost">Il Mio Armadio</a>
+                    <a th:href="@{/vetrina}" class="btn btn-ghost">Vetrina</a>
                     <form th:action="@{/logout}" method="post" style="display: inline;">
                         <button type="submit" class="btn btn-ghost">Esci</button>
                     </form>
@@ -29,16 +27,16 @@
     </nav>
 
     <section class="page-hero compact-hero">
-        <h1 class="section-title" th:text="'Ciao, ' + ${utente.nome} + '!'">Ciao, Daniele!</h1>
-        <p>Gestisci i tuoi annunci sportivi e monitora le tue vendite.</p>
+        <h1 class="section-title" th:text="'Ciao, ' + ${utente.nome}">Ciao, Daniele!</h1>
+        <p>I tuoi annunci sportivi</p>
         <div class="stats-container">
             <div class="stat-box">
                 <span class="stat-value" th:text="${mediaValutazioni}">0.0</span>
-                <span class="stat-label">Media Stelle ⭐</span>
+                <span class="stat-label">Media ⭐</span>
             </div>
             <div class="stat-box">
                 <span class="stat-value" th:text="${mieiArticoli.size()}">0</span>
-                <span class="stat-label">Articoli Online</span>
+                <span class="stat-label">Articoli</span>
             </div>
         </div>
     </section>
@@ -47,31 +45,26 @@
         <div class="grid compact-grid" th:if="${not #lists.isEmpty(mieiArticoli)}">
             <div class="product-card compact-card" th:each="art : ${mieiArticoli}">
                 <img th:if="${art.urlFoto != null}" th:src="${art.urlFoto}" alt="Foto Articolo" class="product-image compact-image">
-                <div th:unless="${art.urlFoto != null}" class="product-image compact-image placeholder-image">📷 Nessuna Foto</div>
+                <div th:unless="${art.urlFoto != null}" class="product-image compact-image placeholder-image">📷</div>
                 <div class="product-content compact-content">
                     <h3 class="product-title" th:text="${art.nome}">Nome Articolo</h3>
                     <p class="product-price" th:text="${#numbers.formatDecimal(art.prezzo, 1, 2)} + ' €'">0.00 €</p>
-                    <p class="product-description compact-description" th:text="${art.descrizione}">Descrizione breve...</p>
+                    <p class="product-description compact-description" th:text="${art.descrizione}">Descrizione...</p>
                     <div class="product-meta">
                         <a th:href="@{'/articolo/modifica/' + ${art.id}}" class="btn btn-secondary compact-btn">Modifica</a>
                         <a th:href="@{'/articolo/elimina/' + ${art.id}}" 
                             class="btn btn-danger compact-btn" 
-                            onclick="return confirm('Sei sicuro di voler eliminare questo annuncio?')">Elimina</a>
+                            onclick="return confirm('Eliminare questo annuncio?')">Elimina</a>
                     </div>
                 </div>
             </div>
         </div>
 
         <div th:if="${#lists.isEmpty(mieiArticoli)}" class="text-center empty-state">
-            <h3>Non hai ancora caricato nulla.</h3>
-            <p>Inizia a vendere i tuoi articoli sportivi!</p>
-            <a th:href="@{/articolo/nuovo}" class="btn btn-primary">Aggiungi il primo annuncio</a>
+            <h3>Nessun annuncio pubblicato</h3>
+            <p>Inizia a vendere i tuoi articoli sportivi</p>
+            <a th:href="@{/articolo/nuovo}" class="btn btn-primary">Pubblica annuncio</a>
         </div>
     </div>
-            <p>Inizia a vendere i tuoi articoli sportivi oggi stesso!</p>
-            <a th:href="@{/articolo/nuovo}" class="btn-edit" style="padding: 10px 20px; border-radius: 5px; text-decoration: none; color: white; display: inline-block; margin-top: 10px;">Vendi il primo articolo</a>
-        </div>
-    </div>
-
 </body>
 </html>
