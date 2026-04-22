@@ -70,37 +70,40 @@
                         <p style="color: var(--text-light);">Ancora nessuna recensione.</p>
                     </div>
 
-                    <div th:each="rec : ${articolo.recensioni}" style="border-bottom: 1px solid var(--border); padding: var(--spacing-lg) 0;">
-                        <div style="display: flex; justify-content: space-between; align-items: start;">
-                            <div>
+                    <div th:each="rec : ${articolo.recensioni}" class="review-card">
+                        <div class="review-header">
+                            <div class="review-author">
                                 <strong style="color: var(--text);" th:text="${rec.autore != null ? rec.autore.nome + ' ' + rec.autore.cognome : 'Anonimo'}">Autore</strong>
-                                <div style="color: var(--primary); font-weight: 600; margin: var(--spacing-xs) 0;">
-                                    <span th:text="${rec.valutazione}">5</span>/5
+                            </div>
+                            <div class="review-rating">
+                                <div class="stars">
+                                    <span th:each="star : ${#numbers.sequence(1, rec.valutazione)}" class="star filled">★</span>
                                 </div>
-                                <p style="color: var(--text-light); line-height: 1.6; margin: var(--spacing-sm) 0 0 0;" th:text="${rec.testo}">Testo recensione...</p>
                             </div>
-                            <div th:if="${emailLoggata != null and rec.autore != null and emailLoggata == rec.autore.email}">
-                                <a th:href="@{'/recensione/elimina/' + ${rec.id}}" class="btn btn-secondary" onclick="return confirm('Sei sicuro?')">Elimina</a>
-                            </div>
+                        </div>
+                        <p class="review-text" th:text="${rec.testo}">Testo recensione...</p>
+                        <div th:if="${emailLoggata != null and rec.autore != null and emailLoggata == rec.autore.email}" class="review-actions">
+                            <a th:href="@{'/recensione/elimina/' + ${rec.id}}" class="btn btn-secondary btn-small" onclick="return confirm('Sei sicuro?')">Elimina</a>
                         </div>
                     </div>
 
                     <div sec:authorize="isAuthenticated()" style="margin-top: var(--spacing-xl); padding-top: var(--spacing-lg); border-top: 1px solid var(--border);">
                         <h4 style="color: var(--text); margin-bottom: var(--spacing-md);">Lascia una recensione</h4>
-                        <form th:action="@{'/recensione/nuova/' + ${articolo.id}}" method="POST">
+                        <form th:action="@{'/articolo/' + ${articolo.id} + '/recensione'}" th:object="${recensione}" method="POST">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                             <div class="form-group">
                                 <label for="valutazione" class="form-label">Valutazione</label>
-                                <select id="valutazione" name="valutazione" required class="form-input">
-                                    <option value="5">5 stelle</option>
-                                    <option value="4">4 stelle</option>
-                                    <option value="3">3 stelle</option>
-                                    <option value="2">2 stelle</option>
-                                    <option value="1">1 stella</option>
+                                <select th:field="*{valutazione}" required class="form-input star-rating-select">
+                                    <option value="5">★★★★★</option>
+                                    <option value="4">★★★★</option>
+                                    <option value="3">★★★</option>
+                                    <option value="2">★★</option>
+                                    <option value="1">★</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label for="testo" class="form-label">Il tuo commento</label>
-                                <textarea id="testo" name="testo" rows="3" required class="form-textarea"></textarea>
+                                <textarea th:field="*{testo}" rows="3" required class="form-textarea"></textarea>
                             </div>
                             <button type="submit" class="btn btn-primary">Invia</button>
                         </form>

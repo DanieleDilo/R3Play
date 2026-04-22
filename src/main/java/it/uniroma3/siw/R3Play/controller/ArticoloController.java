@@ -433,4 +433,28 @@ public class ArticoloController {
         }
         return builder.toString();
     }
+
+    // ==========================================
+    // 9. MODIFICA PROFILO UTENTE
+    // ==========================================
+    @PostMapping("/utente/modifica")
+    public String modificaProfiloUtente(@RequestParam("nome") String nome, 
+                                        @RequestParam("cognome") String cognome, 
+                                        @AuthenticationPrincipal Object principal) {
+        
+        // Recuperiamo l'utente loggato usando il nostro fidato helper
+        Utente utente = getUtenteLoggato(principal);
+        
+        if (utente != null) {
+            // Aggiorniamo i dati
+            utente.setNome(nome);
+            utente.setCognome(cognome);
+            
+            // Salviamo nel database
+            this.userRepository.save(utente);
+        }
+        
+        // Lo rimandiamo all'armadio dove vedrà subito il nuovo nome!
+        return "redirect:/armadio";
+    }
 }
