@@ -69,6 +69,24 @@
             <a th:href="@{/articolo/nuovo}" class="btn btn-primary btn-pulse">Pubblica il tuo primo annuncio</a>
         </div>
 
+        <div class="reviews-section fade-in delay-3" style="margin-top: 4rem;">
+            <h2 style="margin-bottom: 1.5rem; text-align: center; color: var(--primary-neon);">Le tue recensioni</h2>
+            <div th:if="${recensioniRicevute != null and !#lists.isEmpty(recensioniRicevute)}">
+                <div class="review-card" th:each="rec : ${recensioniRicevute}" style="background: var(--surface); border-radius: var(--radius-md); border: 1px solid var(--border); box-shadow: var(--shadow); padding: 1.5rem; margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <span style="color: #ffd700; font-size: 1.1rem; display: inline-flex; gap: 0.15rem;" th:each="i : ${#numbers.sequence(1, rec.valutazione)}">★</span>
+                            <span style="color: var(--text-light); font-size: 0.95rem;">Recensione di <strong th:text="${rec.autore != null ? rec.autore.nome + ' ' + rec.autore.cognome : 'Utente'}">Utente</strong></span>
+                        </div>
+                    </div>
+                    <p style="color: var(--text); line-height: 1.6;" th:text="${rec.testo}">Testo recensione...</p>
+                </div>
+            </div>
+            <div th:unless="${recensioniRicevute != null and !#lists.isEmpty(recensioniRicevute)}" style="text-align: center; color: var(--text-dim); padding: 2rem; border: 1px dashed var(--border); border-radius: var(--radius-md);">
+                Nessuna recensione ricevuta ancora. Chiedi ai tuoi clienti di lasciarne una dopo l'acquisto!
+            </div>
+        </div>
+
         <div class="form-box fade-in delay-3" style="margin-top: 5rem;">
             <h2 style="margin-bottom: 2rem; text-align: center; color: var(--text-main);">⚙️ Impostazioni Profilo</h2>
             

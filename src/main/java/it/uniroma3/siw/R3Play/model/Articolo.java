@@ -24,8 +24,6 @@ public class Articolo {
     @ManyToOne
     private Utente venditore;
 
-    @OneToMany(mappedBy = "articolo", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Recensione> recensioni;
 
     public Long getId() {
         return id;
@@ -88,14 +86,6 @@ public class Articolo {
 
     public void setVenditore(Utente venditore) {
         this.venditore = venditore;
-    }
-
-    public List<Recensione> getRecensioni() {
-        return recensioni;
-    }
-
-    public void setRecensioni(List<Recensione> recensioni) {
-        this.recensioni = recensioni;
     }
 
 }

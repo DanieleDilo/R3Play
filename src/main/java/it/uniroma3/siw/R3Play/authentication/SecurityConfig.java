@@ -22,14 +22,16 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(authorize -> authorize
-                
                 // 1. Risorse di base e pagine di benvenuto permesse a tutti
                 .requestMatchers("/", "/vetrina", "/css/**", "/images/**", "/uploads/**", "/error", "/favicon.ico", "/login", "/registrati").permitAll()
-                
-                // 2. Dettaglio articolo pubblico, ma SOLO se "id" è un numero da 0 a 9!
+
+                // 2. Dettaglio articolo pubblico
                 .requestMatchers("/articolo/{id:[0-9]+}").permitAll()
-                
-                // 3. Qualsiasi altra richiesta (incluso /articolo/nuovo, /armadio, ecc.) viene bloccata se non sei loggato
+
+                // 3. Profilo pubblico utente
+                .requestMatchers("/utente/{id:[0-9]+}").permitAll()
+
+                // 4. Qualsiasi altra richiesta (incluso /articolo/nuovo, /armadio, ecc.) viene bloccata se non sei loggato
                 .anyRequest().authenticated()
             )
             // ... (il resto della configurazione di formLogin e oauth2Login rimane identico)

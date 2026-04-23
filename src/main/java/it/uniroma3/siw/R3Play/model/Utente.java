@@ -5,23 +5,17 @@ import java.util.List;
 
 @Entity
 public class Utente {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
     private String nome;
     private String cognome;
     private String email;
     private String password;
-    private String provider; // Es. conterrà "LOCAL" o "GOOGLE"
+    private String provider; // GOOGLE o LOCAL
 
-    @OneToMany(mappedBy = "venditore")
-    private List<Articolo> articoliInVendita;
-
-    @OneToMany(mappedBy = "autore")
-    private List<Recensione> recensioniScritte;
-
+    @OneToMany(mappedBy = "destinatario", cascade = CascadeType.ALL)
+    private List<Recensione> recensioniRicevute;
 
     public Long getId() {
         return id;
@@ -55,22 +49,6 @@ public class Utente {
         this.email = email;
     }
 
-    public List<Articolo> getArticoliInVendita() {
-        return articoliInVendita;
-    }
-
-    public void setArticoliInVendita(List<Articolo> articoliInVendita) {
-        this.articoliInVendita = articoliInVendita;
-    }
-
-    public List<Recensione> getRecensioniScritte() {
-        return recensioniScritte;
-    }
-
-    public void setRecensioniScritte(List<Recensione> recensioniScritte) {
-        this.recensioniScritte = recensioniScritte;
-    }
-
     public String getPassword() {
         return password;
     }
@@ -87,5 +65,13 @@ public class Utente {
         this.provider = provider;
     }
 
-   
+    public List<Recensione> getRecensioniRicevute() {
+        return recensioniRicevute;
+    }
+
+    public void setRecensioniRicevute(List<Recensione> recensioniRicevute) {
+        this.recensioniRicevute = recensioniRicevute;
+    }
+
+    // Getter e Setter...
 }

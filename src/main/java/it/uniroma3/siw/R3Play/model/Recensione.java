@@ -4,19 +4,17 @@ import jakarta.persistence.*;
 
 @Entity
 public class Recensione {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
-    private Integer valutazione; // Da 1 a 5
+    private int valutazione; // 1-5
     private String testo;
 
     @ManyToOne
-    private Articolo articolo;
+    private Utente autore; // Chi scrive
 
     @ManyToOne
-    private Utente autore;
+    private Utente destinatario;
 
     public Long getId() {
         return id;
@@ -26,11 +24,11 @@ public class Recensione {
         this.id = id;
     }
 
-    public Integer getValutazione() {
+    public int getValutazione() {
         return valutazione;
     }
 
-    public void setValutazione(Integer valutazione) {
+    public void setValutazione(int valutazione) {
         this.valutazione = valutazione;
     }
 
@@ -42,14 +40,6 @@ public class Recensione {
         this.testo = testo;
     }
 
-    public Articolo getArticolo() {
-        return articolo;
-    }
-
-    public void setArticolo(Articolo articolo) {
-        this.articolo = articolo;
-    }
-
     public Utente getAutore() {
         return autore;
     }
@@ -58,5 +48,13 @@ public class Recensione {
         this.autore = autore;
     }
 
-    
+    public Utente getDestinatario() {
+        return destinatario;
+    }
+
+    public void setDestinatario(Utente destinatario) {
+        this.destinatario = destinatario;
+    } // Chi riceve (il venditore)
+
 }
+   

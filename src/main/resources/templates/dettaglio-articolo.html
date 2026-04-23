@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>R3Play - Dettaglio Articolo</title>
+    <title>Dettaglio Articolo - R3Play</title>
     <link rel="stylesheet" href="/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -12,110 +12,46 @@
         <div class="navbar-content">
             <a th:href="@{/}" class="logo">R3Play</a>
             <div class="nav-actions">
-                <div sec:authorize="isAnonymous()">
-                    <a th:href="@{/login}" class="btn btn-secondary">Accedi</a>
-                    <a th:href="@{/registrati}" class="btn btn-ghost">Registrati</a>
-                </div>
-                <div sec:authorize="isAuthenticated()">
-                    <a th:href="@{/armadio}" class="btn btn-ghost">Armadio</a>
-                    <form th:action="@{/logout}" method="post">
-                        <button type="submit" class="logout-button">Esci</button>
-                    </form>
-                </div>
+                <a th:href="@{/}" class="btn btn-outline">Torna alla Vetrina</a>
             </div>
         </div>
     </nav>
 
-    <section class="section">
-        <div class="container">
-            <a class="back-link" th:href="@{/vetrina}">← Torna alla Vetrina</a>
-
-            <div class="grid-2">
-                <div class="card">
-                    <img th:if="${articolo.fotoUrls != null and !#lists.isEmpty(articolo.fotoUrls)}" th:src="${articolo.fotoUrls.get(0)}" alt="Immagine del prodotto" class="card-image">
-                    <img th:if="${(articolo.fotoUrls == null or #lists.isEmpty(articolo.fotoUrls)) and articolo.urlFoto != null}" th:src="${articolo.urlFoto}" alt="Immagine del prodotto" class="card-image">
-                    <div th:unless="${(articolo.fotoUrls != null and !#lists.isEmpty(articolo.fotoUrls)) or articolo.urlFoto != null}" class="card-image" style="display: flex; align-items: center; justify-content: center; background: var(--secondary); color: white; font-size: 1.2rem; font-weight: 600;">
-                        📷 Nessuna immagine disponibile
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-content">
-                        <h1 th:text="${articolo.nome}">Nome Articolo di Esempio</h1>
-
-                        <p th:text="${#numbers.formatDecimal(articolo.prezzo, 1, 2)} + ' €'">0.00 €</p>
-
-                        <div>
-                            <h3>Descrizione</h3>
-                            <p th:text="${articolo.descrizione}">Questa è una descrizione segnaposto...</p>
-                        </div>
-
-                        <div>
-                            <strong>Venditore:</strong>
-                            <span th:text="${articolo.venditore != null ? articolo.venditore.nome + ' ' + articolo.venditore.cognome : 'Utente R3Play'}">Nome Venditore</span>
-                        </div>
-
-                        <div sec:authorize="isAuthenticated()">
-                            <button class="btn btn-primary">Contatta il venditore</button>
-                        </div>
-                    </div>
+    <div class="container" style="margin-top: 4rem; margin-bottom: 4rem;">
+        <div class="fade-in delay-1" style="max-width: 900px; display: flex; flex-wrap: wrap; gap: 3rem; padding: 3rem; background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow); border: 1px solid var(--border);">
+            <div style="flex: 1; min-width: 300px;">
+                <img th:if="${articolo.urlFoto != null}" th:src="@{${articolo.urlFoto}}" style="width: 100%; height: auto; max-height: 400px; object-fit: cover; border-radius: var(--radius-lg); border: 1px solid rgba(255,255,255,0.08); box-shadow: var(--shadow);">
+                <div th:unless="${articolo.urlFoto != null}" style="width: 100%; height: 350px; display:flex; align-items:center; justify-content:center; background: rgba(255,255,255,0.05); border-radius: var(--radius-lg); border: 1px solid rgba(255,255,255,0.08); color: var(--text-light);">
+                    📷 Nessuna Foto
                 </div>
             </div>
 
-            <div class="card" style="margin-top: var(--spacing-xl);">
-                <div class="card-content">
-                    <h2 style="color: var(--primary); margin-bottom: var(--spacing-lg);">Recensioni</h2>
-
-                    <div th:if="${#lists.isEmpty(articolo.recensioni)}" class="text-center" style="padding: var(--spacing-xl);">
-                        <p style="color: var(--text-light);">Ancora nessuna recensione.</p>
+            <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
+                <h1 th:text="${articolo.nome}" style="font-size: 2.2rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text); letter-spacing: -1px; background: linear-gradient(45deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Nome Articolo</h1>
+                <p th:text="${#numbers.formatDecimal(articolo.prezzo, 1, 2)} + ' €'" style="font-size: 2rem; color: var(--primary); font-weight: 800; margin-bottom: 2rem; text-shadow: 0 0 15px var(--primary-hover);"></p>
+                <div style="background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 2rem; flex-grow: 1;">
+                    <h4 style="color: var(--text-light); text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem; margin-bottom: 0.8rem;">Descrizione dell'annuncio</h4>
+                    <p th:text="${articolo.descrizione}" style="line-height: 1.7; color: var(--text);"></p>
+                </div>
+                <div style="padding-top: 1.5rem; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <span style="color: var(--text-light); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Venduto da</span> <br>
+                        <a th:if="${articolo.venditore != null}" 
+                           th:href="@{'/utente/' + ${articolo.venditore.id}}" 
+                           style="color: var(--text); font-weight: 700; font-size: 1.2rem; transition: var(--transition);">
+                           <span th:text="${articolo.venditore.nome + ' ' + articolo.venditore.cognome}">Nome Venditore</span>
+                        </a>
+                        <span th:unless="${articolo.venditore != null}" style="color: var(--text); font-weight: 700; font-size: 1.2rem;">Utente R3Play</span>
                     </div>
-
-                    <div th:each="rec : ${articolo.recensioni}" class="review-card">
-                        <div class="review-header">
-                            <div class="review-author">
-                                <strong style="color: var(--text);" th:text="${rec.autore != null ? rec.autore.nome + ' ' + rec.autore.cognome : 'Anonimo'}">Autore</strong>
-                            </div>
-                            <div class="review-rating">
-                                <div class="stars">
-                                    <span th:each="star : ${#numbers.sequence(1, rec.valutazione)}" class="star filled">★</span>
-                                </div>
-                            </div>
-                        </div>
-                        <p class="review-text" th:text="${rec.testo}">Testo recensione...</p>
-                        <div th:if="${emailLoggata != null and rec.autore != null and emailLoggata == rec.autore.email}" class="review-actions">
-                            <a th:href="@{'/recensione/elimina/' + ${rec.id}}" class="btn btn-secondary btn-small" onclick="return confirm('Sei sicuro?')">Elimina</a>
-                        </div>
-                    </div>
-
-                    <div sec:authorize="isAuthenticated()" style="margin-top: var(--spacing-xl); padding-top: var(--spacing-lg); border-top: 1px solid var(--border);">
-                        <h4 style="color: var(--text); margin-bottom: var(--spacing-md);">Lascia una recensione</h4>
-                        <form th:action="@{'/articolo/' + ${articolo.id} + '/recensione'}" th:object="${recensione}" method="POST">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                            <div class="form-group">
-                                <label for="valutazione" class="form-label">Valutazione</label>
-                                <select th:field="*{valutazione}" required class="form-input star-rating-select">
-                                    <option value="5">★★★★★</option>
-                                    <option value="4">★★★★</option>
-                                    <option value="3">★★★</option>
-                                    <option value="2">★★</option>
-                                    <option value="1">★</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="testo" class="form-label">Il tuo commento</label>
-                                <textarea th:field="*{testo}" rows="3" required class="form-textarea"></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Invia</button>
-                        </form>
-                    </div>
-
-                    <div sec:authorize="isAnonymous()" class="text-center" style="margin-top: var(--spacing-lg); padding: var(--spacing-lg); background: var(--surface-dark); border-radius: var(--radius-md);">
-                        <p style="color: var(--text-light); margin-bottom: var(--spacing-md);">Accedi per lasciare una recensione</p>
-                        <a th:href="@{/login}" class="btn btn-primary">Accedi</a>
-                    </div>
+                    <a th:if="${articolo.venditore != null and (emailLoggata == null or emailLoggata != articolo.venditore.email)}" th:href="@{'/utente/' + ${articolo.venditore.id}}" class="btn btn-primary" style="padding: 0.5rem 1.2rem; font-size: 0.85rem;">
+                        Visita Profilo
+                    </a>
+                    <span th:if="${articolo.venditore != null and emailLoggata != null and emailLoggata == articolo.venditore.email}" class="btn btn-ghost" style="padding: 0.5rem 1.2rem; font-size: 0.85rem; opacity: 0.7; cursor: default;">
+                        Il tuo profilo
+                    </span>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 </body>
 </html>

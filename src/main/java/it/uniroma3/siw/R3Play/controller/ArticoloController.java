@@ -222,29 +222,30 @@ public class ArticoloController {
         }
 
         model.addAttribute("articolo", articolo);
-        model.addAttribute("recensione", new Recensione());
+        // Rimosso l'invio della recensione vuota qui, ora si fa nel profilo utente
         return "dettaglio-articolo";
     }
 
     // ==========================================
-    // 5. AGGIUNGI RECENSIONE
+    // 5. AGGIUNGI RECENSIONE (AL VENDITORE)
     // ==========================================
-    @PostMapping("/articolo/{idArticolo}/recensione")
-    public String aggiungiRecensione(@PathVariable("idArticolo") Long idArticolo,
-            @ModelAttribute("recensione") Recensione recensione,
-            @AuthenticationPrincipal Object principal) {
+    @PostMapping("/utente/{id}/recensione")
+    public String aggiungiRecensioneUtente(@PathVariable("id") Long idVenditore, 
+                                           @ModelAttribute("nuovaRecensione") Recensione recensione,
+                                           @AuthenticationPrincipal Object principal) {
 
-        Articolo articolo = this.articoloRepository.findById(idArticolo).orElse(null);
+        Utente destinatario = this.userRepository.findById(idVenditore).orElse(null);
         Utente autore = getUtenteLoggato(principal);
 
-        if (articolo != null && autore != null) {
-            recensione.setId(null); 
-            recensione.setArticolo(articolo);
+        // Controlliamo che entrambi esistano e che l'autore non stia recensendo se stesso
+        if (destinatario != null && autore != null && !destinatario.getId().equals(autore.getId())) {
+            recensione.setId(null);
             recensione.setAutore(autore);
+            recensione.setDestinatario(destinatario);
             this.recensioneRepository.save(recensione);
         }
 
-        return "redirect:/articolo/" + idArticolo;
+        return "redirect:/utente/" + idVenditore; // Torna al profilo appena recensito
     }
 
     // ==========================================
@@ -259,9 +260,9 @@ public class ArticoloController {
 
         if (recensione != null && utenteLoggato != null) {
             if (recensione.getAutore() != null && utenteLoggato.getEmail().equals(recensione.getAutore().getEmail())) {
-                Long articoloId = recensione.getArticolo().getId();
+                Long idVenditore = recensione.getDestinatario().getId();
                 this.recensioneRepository.delete(recensione);
-                return "redirect:/articolo/" + articoloId;
+                return "redirect:/utente/" + idVenditore;
             }
         }
         return "redirect:/";
@@ -289,6 +290,7 @@ public class ArticoloController {
     // 8. IL MIO ARMADIO (Area Personale)
     // ==========================================
     @GetMapping("/armadio")
+    @org.springframework.transaction.annotation.Transactional
     public String mostraMioArmadio(Model model, @AuthenticationPrincipal Object principal) {
 
         Utente utenteLoggato = getUtenteLoggato(principal);
@@ -296,29 +298,83 @@ public class ArticoloController {
 
         List<Articolo> mieiArticoli = this.articoloRepository.findByVenditore(utenteLoggato);
 
+        // Nuovo calcolo basato sulle recensioni dell'utente (non dell'articolo)
         double mediaValutazioni = 0.0;
         int totaleRecensioni = 0;
-        int sommaStelle = 0;
-        for (Articolo articolo : mieiArticoli) {
-            if (articolo.getRecensioni() != null) {
-                for (Recensione r : articolo.getRecensioni()) {
-                    sommaStelle += r.getValutazione();
-                    totaleRecensioni++;
-                }
+        
+        if (utenteLoggato.getRecensioniRicevute() != null && !utenteLoggato.getRecensioniRicevute().isEmpty()) {
+            totaleRecensioni = utenteLoggato.getRecensioniRicevute().size();
+            int sommaStelle = 0;
+            for (Recensione r : utenteLoggato.getRecensioniRicevute()) {
+                sommaStelle += r.getValutazione();
             }
-        }
-        if (totaleRecensioni > 0) {
             mediaValutazioni = Math.round(((double) sommaStelle / totaleRecensioni) * 10.0) / 10.0;
         }
 
         model.addAttribute("utente", utenteLoggato);
         model.addAttribute("mieiArticoli", mieiArticoli);
         model.addAttribute("mediaValutazioni", mediaValutazioni);
+        model.addAttribute("recensioniRicevute", utenteLoggato.getRecensioniRicevute());
 
         return "armadio";
     }
 
-    
+    // ==========================================
+    // 9. MODIFICA PROFILO UTENTE
+    // ==========================================
+    @PostMapping("/utente/modifica")
+    public String modificaProfiloUtente(@RequestParam("nome") String nome, 
+                                        @RequestParam("cognome") String cognome, 
+                                        @AuthenticationPrincipal Object principal) {
+        
+        Utente utente = getUtenteLoggato(principal);
+        
+        if (utente != null) {
+            utente.setNome(nome);
+            utente.setCognome(cognome);
+            this.userRepository.save(utente);
+        }
+        
+        return "redirect:/armadio";
+    }
+
+    // ==========================================
+    // 10. PROFILO PUBBLICO VENDITORE
+    // ==========================================
+    @GetMapping("/utente/{id}")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public String mostraProfiloVenditore(@PathVariable("id") Long id, Model model, @AuthenticationPrincipal Object principal) {
+        
+        Utente venditore = this.userRepository.findById(id).orElse(null);
+        if (venditore == null) return "redirect:/";
+
+        List<Articolo> articoliVenditore = this.articoloRepository.findByVenditore(venditore);
+
+        double mediaValutazioni = 0.0;
+        int totaleRecensioni = 0;
+        if (venditore.getRecensioniRicevute() != null && !venditore.getRecensioniRicevute().isEmpty()) {
+            totaleRecensioni = venditore.getRecensioniRicevute().size();
+            int sommaStelle = 0;
+            for (Recensione r : venditore.getRecensioniRicevute()) {
+                sommaStelle += r.getValutazione();
+            }
+            mediaValutazioni = Math.round(((double) sommaStelle / totaleRecensioni) * 10.0) / 10.0;
+        }
+
+        model.addAttribute("venditore", venditore);
+        model.addAttribute("articoliVenditore", articoliVenditore);
+        model.addAttribute("mediaValutazioni", mediaValutazioni);
+        model.addAttribute("totaleRecensioni", totaleRecensioni);
+        model.addAttribute("nuovaRecensione", new Recensione()); 
+
+        Utente visitatore = getUtenteLoggato(principal);
+        if (visitatore != null) {
+            model.addAttribute("utente", visitatore);
+        }
+
+        return "profilo-utente";
+    }
+
     // ==========================================
     // METODO HELPER UNIVERSALE PER IL LOGIN
     // ==========================================
@@ -330,7 +386,6 @@ public class ArticoloController {
         String cognome = null;
         String provider = null;
 
-        // 1. Estrazione dati in base al tipo di login
         if (principal instanceof org.springframework.security.oauth2.core.user.OAuth2User) {
             org.springframework.security.oauth2.core.user.OAuth2User oauth = (org.springframework.security.oauth2.core.user.OAuth2User) principal;
             Object emailAttr = oauth.getAttribute("email");
@@ -363,7 +418,6 @@ public class ArticoloController {
             email = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
         }
 
-        // 2. Controllo e salvataggio sul Database
         if (email != null) {
             Utente utente = this.userRepository.findByEmail(email).orElse(null);
             if (utente == null && "GOOGLE".equals(provider)) {
@@ -392,69 +446,31 @@ public class ArticoloController {
         return null;
     }
 
-    private String buildNomeCompleto(Utente utente) {
-        if (utente == null) {
-            return null;
+   private String buildNomeCompleto(Utente utente) {
+        if (utente == null) return "Ospite";
+        
+        String nome = (utente.getNome() != null) ? utente.getNome() : "";
+        String cognome = (utente.getCognome() != null) ? utente.getCognome() : "";
+        
+        if (nome.isBlank() && cognome.isBlank()) {
+            return utente.getEmail().split("@")[0]; // Fallback sull'email
         }
-        String nome = utente.getNome();
-        String cognome = utente.getCognome();
-        if ((nome == null || nome.isBlank()) && (cognome == null || cognome.isBlank())) {
-            String email = utente.getEmail();
-            return email != null ? email.split("@")[0] : "Utente";
-        }
-        StringBuilder fullName = new StringBuilder();
-        if (nome != null && !nome.isBlank()) {
-            fullName.append(capitalize(nome));
-        }
-        if (cognome != null && !cognome.isBlank()) {
-            if (fullName.length() > 0) {
-                fullName.append(" ");
-            }
-            fullName.append(capitalize(cognome));
-        }
-        return fullName.toString();
+        
+        return (nome + " " + cognome).trim();
     }
 
+   // Rendi il metodo capitalize resistente ai null
     private String capitalize(String text) {
-        if (text == null || text.isBlank()) {
-            return text;
-        }
+        if (text == null || text.isBlank()) return "Utente"; // Default se manca
+        
         String[] words = text.trim().split("\\s+");
         StringBuilder builder = new StringBuilder();
         for (String word : words) {
-            if (builder.length() > 0) {
-                builder.append(" ");
-            }
-            if (word.length() == 1) {
-                builder.append(word.toUpperCase());
-            } else {
-                builder.append(word.substring(0, 1).toUpperCase()).append(word.substring(1).toLowerCase());
-            }
+            if (word.isEmpty()) continue;
+            if (builder.length() > 0) builder.append(" ");
+            builder.append(word.substring(0, 1).toUpperCase())
+                   .append(word.substring(1).toLowerCase());
         }
         return builder.toString();
-    }
-
-    // ==========================================
-    // 9. MODIFICA PROFILO UTENTE
-    // ==========================================
-    @PostMapping("/utente/modifica")
-    public String modificaProfiloUtente(@RequestParam("nome") String nome, 
-                                        @RequestParam("cognome") String cognome, 
-                                        @AuthenticationPrincipal Object principal) {
-        
-        // Recuperiamo l'utente loggato usando il nostro fidato helper
-        Utente utente = getUtenteLoggato(principal);
-        
-        if (utente != null) {
-            // Aggiorniamo i dati
-            utente.setNome(nome);
-            utente.setCognome(cognome);
-            
-            // Salviamo nel database
-            this.userRepository.save(utente);
-        }
-        
-        // Lo rimandiamo all'armadio dove vedrà subito il nuovo nome!
-        return "redirect:/armadio";
     }
 }
