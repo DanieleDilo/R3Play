@@ -228,12 +228,16 @@ button {
 }
 
 .section-title {
-    font-size: 2.5rem;
-    font-weight: 700;
+    font-size: clamp(1.9rem, 4vw, 2.4rem);
+    font-weight: 800;
+    margin: var(--spacing-lg) auto var(--spacing-sm);
     text-align: center;
-    margin-bottom: var(--spacing-xl);
-    color: white;
-    /* Testo bianco per contrasto su banner grigi */
+    color: var(--text);
+    background: linear-gradient(45deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: glow 2s ease-in-out infinite alternate;
 }
 
 .section-title::after {
@@ -256,7 +260,6 @@ button {
     text-align: center;
     border: 1px solid var(--border);
     color: white;
-    /* Testo bianco per contrasto su sfondo grigio/trasparente */
 }
 
 .hero-title {
@@ -417,7 +420,6 @@ ol li {
     min-height: 120px;
 }
 
-/* Buttons in forms */
 .form-actions {
     display: flex;
     gap: var(--spacing-md);
@@ -461,61 +463,6 @@ ol li {
     background: var(--primary-hover);
 }
 
-/* Product cards */
-.product-card {
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border);
-    overflow: hidden;
-    transition: var(--transition);
-    cursor: pointer;
-}
-
-.product-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-hover);
-}
-
-.product-image {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-bottom: 1px solid var(--border);
-}
-
-.product-content {
-    padding: var(--spacing-lg);
-}
-
-.product-title {
-    font-size: 1.125rem;
-    font-weight: 600;
-    margin-bottom: var(--spacing-xs);
-    color: var(--text);
-}
-
-.product-price {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--primary);
-    margin-bottom: var(--spacing-sm);
-}
-
-.product-description {
-    color: var(--text-light);
-    line-height: 1.5;
-    margin-bottom: var(--spacing-md);
-}
-
-.product-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.875rem;
-    color: var(--text-muted);
-}
-
 /* Auth forms */
 .auth-form {
     max-width: 400px;
@@ -542,65 +489,21 @@ ol li {
 }
 
 /* Utility classes */
-.text-center {
-    text-align: center;
-}
-
-.text-left {
-    text-align: left;
-}
-
-.text-right {
-    text-align: right;
-}
-
-.mb-0 {
-    margin-bottom: 0;
-}
-
-.mb-1 {
-    margin-bottom: var(--spacing-xs);
-}
-
-.mb-2 {
-    margin-bottom: var(--spacing-sm);
-}
-
-.mb-3 {
-    margin-bottom: var(--spacing-md);
-}
-
-.mb-4 {
-    margin-bottom: var(--spacing-lg);
-}
-
-.mb-5 {
-    margin-bottom: var(--spacing-xl);
-}
-
-.mt-0 {
-    margin-top: 0;
-}
-
-.mt-1 {
-    margin-top: var(--spacing-xs);
-}
-
-.mt-2 {
-    margin-top: var(--spacing-sm);
-}
-
-.mt-3 {
-    margin-top: var(--spacing-md);
-}
-
-.mt-4 {
-    margin-top: var(--spacing-lg);
-}
-
-.mt-5 {
-    margin-top: var(--spacing-xl);
-}
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: var(--spacing-xs); }
+.mb-2 { margin-bottom: var(--spacing-sm); }
+.mb-3 { margin-bottom: var(--spacing-md); }
+.mb-4 { margin-bottom: var(--spacing-lg); }
+.mb-5 { margin-bottom: var(--spacing-xl); }
+.mt-0 { margin-top: 0; }
+.mt-1 { margin-top: var(--spacing-xs); }
+.mt-2 { margin-top: var(--spacing-sm); }
+.mt-3 { margin-top: var(--spacing-md); }
+.mt-4 { margin-top: var(--spacing-lg); }
+.mt-5 { margin-top: var(--spacing-xl); }
 
 .fade-in {
     animation: fadeIn 0.6s ease-out;
@@ -611,14 +514,15 @@ ol li {
         opacity: 0;
         transform: translateY(20px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
-/* Nuove classi per design innovativo */
+/* =====================================
+   Pagine Hero e Componenti Innovativi
+   ===================================== */
 .page-hero {
     text-align: center;
     padding: var(--spacing-lg) var(--spacing-md) var(--spacing-xl);
@@ -630,7 +534,6 @@ ol li {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.08);
     color: white;
-    /* Testo bianco per contrasto su sfondo grigio/trasparente */
 }
 
 .welcome-hero {
@@ -686,54 +589,6 @@ ol li {
     z-index: -1;
 }
 
-.section-title {
-    font-size: clamp(1.9rem, 4vw, 2.4rem);
-    font-weight: 800;
-    margin: var(--spacing-lg) auto var(--spacing-sm);
-    color: var(--text);
-    background: linear-gradient(45deg, var(--primary), var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: glow 2s ease-in-out infinite alternate;
-}
-
-.page-hero-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--spacing-md);
-    width: 100%;
-    position: absolute;
-    top: var(--spacing-md);
-    left: var(--spacing-md);
-    right: var(--spacing-md);
-    z-index: 1;
-}
-
-.hero-logo {
-    font-weight: 700;
-    font-size: 1.05rem;
-    color: var(--text);
-}
-
-.hero-header-actions {
-    display: flex;
-    gap: var(--spacing-sm);
-    align-items: center;
-}
-
-.hero-header-actions .btn,
-.hero-header-actions .logout-button {
-    padding: 0.55rem 0.95rem;
-    font-size: 0.8rem;
-    border-radius: 999px;
-}
-
-.hero-logout-form {
-    margin: 0;
-}
-
 .page-hero p {
     max-width: 700px;
     margin: 0 auto var(--spacing-md);
@@ -780,18 +635,18 @@ ol li {
     align-items: stretch;
 }
 
-.search-input {
-    flex: 1;
-    min-width: 0;
+.empty-state {
+    padding: var(--spacing-xl);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.search-button {
-    white-space: nowrap;
-    padding: 0 1.4rem;
-}
-
+/* =====================================
+   Card degli Articoli (Con fix simmetria)
+   ===================================== */
 .compact-grid {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
     gap: var(--spacing-lg);
 }
 
@@ -803,77 +658,11 @@ ol li {
     overflow: hidden;
     transition: var(--transition);
     cursor: pointer;
-}
-
-.product-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-hover);
-}
-
-.product-image {
-    width: 100%;
-    height: 150px;
-    object-fit: cover;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.product-content {
-    padding: 0.85rem;
-}
-
-.product-title {
-    font-size: 0.95rem;
-    font-weight: 700;
-    margin-bottom: 0.4rem;
-}
-
-.product-price {
-    font-size: 1rem;
-    margin-bottom: 0.4rem;
-}
-
-.product-description {
-    color: var(--text-light);
-    line-height: 1.4;
-    margin-bottom: 0.8rem;
-    max-height: 3.2em;
-    overflow: hidden;
-}
-
-.product-meta {
+    
+    /* --- AGGIUNTO PER SIMMETRIA --- */
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.82rem;
-    gap: 0.75rem;
-}
-
-.compact-btn {
-    width: 100%;
-    padding: 0.7rem 0.95rem;
-}
-
-.compact-search {
-    max-width: 900px;
-    margin: 0 auto var(--spacing-lg);
-    padding: 0;
-}
-
-.empty-state {
-    padding: var(--spacing-xl);
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: var(--radius-lg);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.product-card {
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    overflow: hidden;
-    transition: var(--transition);
-    cursor: pointer;
+    flex-direction: column;
+    height: 100%;
 }
 
 .product-card:hover {
@@ -890,6 +679,11 @@ ol li {
 
 .product-content {
     padding: 1rem;
+    
+    /* --- AGGIUNTO PER SIMMETRIA --- */
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 }
 
 .product-title {
@@ -901,6 +695,7 @@ ol li {
 .product-price {
     font-size: 1.05rem;
     margin-bottom: 0.5rem;
+    color: var(--primary);
 }
 
 .product-description {
@@ -917,16 +712,14 @@ ol li {
     align-items: center;
     font-size: 0.85rem;
     gap: 1rem;
+    
+    /* --- AGGIUNTO PER SIMMETRIA --- */
+    margin-top: auto; 
 }
 
 .compact-btn {
     width: 100%;
     padding: 0.8rem 1rem;
-}
-
-.compact-grid {
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-    gap: var(--spacing-lg);
 }
 
 .compact-search {
@@ -936,13 +729,8 @@ ol li {
 }
 
 @keyframes glow {
-    from {
-        filter: brightness(1);
-    }
-
-    to {
-        filter: brightness(1.2);
-    }
+    from { filter: brightness(1); }
+    to { filter: brightness(1.2); }
 }
 
 .back-link {
@@ -991,18 +779,10 @@ ol li {
     color: var(--primary);
 }
 
-
 @keyframes float {
-    0%,
-    100% {
-        transform: translateY(0px) rotate(0deg);
-    }
-
-    50% {
-        transform: translateY(-20px) rotate(180deg);
-    }
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
 }
-
 
 /* --- BARRA DI RICERCA ELEGANTE (TEMA SCURO) --- */
 .search-form-elegant {
@@ -1070,45 +850,19 @@ ol li {
     transform: scale(1.02);
 }
 
-
 /* Responsive */
 @media (max-width: 768px) {
-    .navbar {
-        padding: var(--spacing-md);
-    }
-
-    .nav-actions {
-        gap: var(--spacing-sm);
-    }
-
-    .hero {
-        padding: var(--spacing-lg);
-    }
-
-    .hero-title {
-        font-size: 2.5rem;
-    }
-
-    .grid {
-        grid-template-columns: 1fr;
-        gap: var(--spacing-md);
-    }
-
-    .grid-2 {
-        grid-template-columns: 1fr;
-    }
-
-    .form-actions {
-        flex-direction: column;
-    }
-
-    .hero-actions {
-        flex-direction: column;
-        align-items: center;
-    }
+    .navbar { padding: var(--spacing-md); }
+    .nav-actions { gap: var(--spacing-sm); }
+    .hero { padding: var(--spacing-lg); }
+    .hero-title { font-size: 2.5rem; }
+    .grid { grid-template-columns: 1fr; gap: var(--spacing-md); }
+    .grid-2 { grid-template-columns: 1fr; }
+    .form-actions { flex-direction: column; }
+    .hero-actions { flex-direction: column; align-items: center; }
 }
 
-/* Stili per le recensioni */
+/* Stili per le recensioni (Con fix simmetria) */
 .review-card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -1116,6 +870,11 @@ ol li {
     padding: var(--spacing-lg);
     margin-bottom: var(--spacing-lg);
     transition: var(--transition);
+    
+    /* --- AGGIUNTO PER SIMMETRIA --- */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .review-card:hover {
@@ -1163,6 +922,9 @@ ol li {
     line-height: 1.6;
     margin: var(--spacing-md) 0;
     font-size: 0.95rem;
+    
+    /* --- AGGIUNTO PER SIMMETRIA (Spinge bottoni in basso) --- */
+    flex-grow: 1; 
 }
 
 .review-actions {
