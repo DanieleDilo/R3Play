@@ -31,11 +31,11 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
        
-       // 3. Traduce il nostro "Utente" nel formato "User" assegnandogli il ruolo base "ROLE_USER"
+       // 3. Traduce il nostro "Utente" nel formato "User" assegnandogli il ruolo letto dal DB
         return new User(
                 utente.getEmail(),
                 utente.getPassword(),
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+                Collections.singletonList(new SimpleGrantedAuthority(utente.getRuolo()))
         );
     }
 }

@@ -13,6 +13,7 @@ public class Utente {
     private String email;
     private String password;
     private String provider; // GOOGLE o LOCAL
+    private String ruolo = "ROLE_USER";
 
     @OneToMany(mappedBy = "destinatario", cascade = CascadeType.ALL)
     private List<Recensione> recensioniRicevute;
@@ -63,6 +64,14 @@ public class Utente {
 
     public void setProvider(String provider) {
         this.provider = provider;
+    }
+
+    public String getRuolo() {
+        return ruolo == null ? "ROLE_USER" : ruolo;
+    }
+
+    public void setRuolo(String ruolo) {
+        this.ruolo = ruolo;
     }
 
     public List<Recensione> getRecensioniRicevute() {

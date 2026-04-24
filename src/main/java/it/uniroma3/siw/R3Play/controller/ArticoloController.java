@@ -152,7 +152,7 @@ public class ArticoloController {
 
         if (articolo == null || utenteLoggato == null) return "redirect:/";
 
-        if (articolo.getVenditore() != null && utenteLoggato.getEmail().equals(articolo.getVenditore().getEmail())) {
+        if ("ROLE_ADMIN".equals(utenteLoggato.getRuolo()) || (articolo.getVenditore() != null && utenteLoggato.getEmail().equals(articolo.getVenditore().getEmail()))) {
             model.addAttribute("articolo", articolo);
             return "modifica-articolo";
         }
@@ -170,7 +170,7 @@ public class ArticoloController {
         Utente utenteLoggato = getUtenteLoggato(principal);
 
         if (articoloEsistente != null && utenteLoggato != null) {
-            if (articoloEsistente.getVenditore() != null && utenteLoggato.getEmail().equals(articoloEsistente.getVenditore().getEmail())) {
+            if ("ROLE_ADMIN".equals(utenteLoggato.getRuolo()) || (articoloEsistente.getVenditore() != null && utenteLoggato.getEmail().equals(articoloEsistente.getVenditore().getEmail()))) {
                 articoloEsistente.setNome(articoloModificato.getNome());
                 articoloEsistente.setDescrizione(articoloModificato.getDescrizione());
                 articoloEsistente.setPrezzo(articoloModificato.getPrezzo());
@@ -259,7 +259,7 @@ public class ArticoloController {
         Utente utenteLoggato = getUtenteLoggato(principal);
 
         if (recensione != null && utenteLoggato != null) {
-            if (recensione.getAutore() != null && utenteLoggato.getEmail().equals(recensione.getAutore().getEmail())) {
+            if ("ROLE_ADMIN".equals(utenteLoggato.getRuolo()) || (recensione.getAutore() != null && utenteLoggato.getEmail().equals(recensione.getAutore().getEmail()))) {
                 Long idVenditore = recensione.getDestinatario().getId();
                 this.recensioneRepository.delete(recensione);
                 return "redirect:/utente/" + idVenditore;
@@ -279,7 +279,7 @@ public class ArticoloController {
         Utente utenteLoggato = getUtenteLoggato(principal);
         
         if (articolo != null && utenteLoggato != null) {
-            if (articolo.getVenditore() != null && utenteLoggato.getEmail().equals(articolo.getVenditore().getEmail())) {
+            if ("ROLE_ADMIN".equals(utenteLoggato.getRuolo()) || (articolo.getVenditore() != null && utenteLoggato.getEmail().equals(articolo.getVenditore().getEmail()))) {
                 this.articoloRepository.delete(articolo);
             }
         }

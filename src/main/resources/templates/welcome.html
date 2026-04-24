@@ -22,6 +22,9 @@
         </div>
         <h1 class="section-title" th:if="${nomeLoggato != null}" th:text="'Bentornato, ' + ${nomeLoggato} + '!'">R3Play</h1>
         <h1 class="section-title" th:unless="${nomeLoggato != null}">R3Play</h1>
+        <p style="color: var(--text-light); font-size: 1.15rem; max-width: 600px; margin: 0 auto 2.5rem; line-height: 1.6;">
+            Il marketplace innovativo dedicato agli sportivi. Compra, vendi e dai nuova vita alla tua attrezzatura sportiva in modo semplice e sicuro.
+        </p>
         <div class="hero-actions">
             <a th:href="@{/vetrina}" class="btn btn-ghost">Esplora</a>
             <a th:href="@{/login}" class="btn btn-primary">Accedi</a>

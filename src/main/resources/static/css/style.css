@@ -240,15 +240,6 @@ button {
     animation: glow 2s ease-in-out infinite alternate;
 }
 
-.section-title::after {
-    content: '';
-    display: block;
-    width: 60px;
-    height: 4px;
-    background: linear-gradient(90deg, var(--primary), var(--accent));
-    margin: var(--spacing-md) auto 0;
-    border-radius: 2px;
-}
 
 /* Hero sections */
 .hero {
