@@ -19,10 +19,8 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import it.uniroma3.siw.R3Play.model.Articolo;
-import it.uniroma3.siw.R3Play.model.Recensione;
 import it.uniroma3.siw.R3Play.model.Utente;
 import it.uniroma3.siw.R3Play.repository.ArticoloRepository;
-import it.uniroma3.siw.R3Play.repository.RecensioneRepository;
 import it.uniroma3.siw.R3Play.repository.UserRepository;
 
 @SuppressWarnings("null")
@@ -31,9 +29,6 @@ public class ArticoloController {
 
     @Autowired
     private ArticoloRepository articoloRepository;
-
-    @Autowired
-    private RecensioneRepository recensioneRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -141,7 +136,7 @@ public class ArticoloController {
     }
 
     // ==========================================
-    // 3. MODIFICA ARTICOLO
+    // 4. MODIFICA ARTICOLO
     // ==========================================
     @GetMapping("/articolo/modifica/{id}")
     public String mostraFormModifica(@PathVariable("id") Long id, Model model,
@@ -204,7 +199,7 @@ public class ArticoloController {
     }
 
     // ==========================================
-    // 4. DETTAGLIO ARTICOLO
+    // 5. DETTAGLIO ARTICOLO
     // ==========================================
     @GetMapping("/articolo/{id}")
     public String mostraDettaglioArticolo(@PathVariable("id") Long id, Model model,
@@ -222,54 +217,11 @@ public class ArticoloController {
         }
 
         model.addAttribute("articolo", articolo);
-        // Rimosso l'invio della recensione vuota qui, ora si fa nel profilo utente
         return "dettaglio-articolo";
     }
 
     // ==========================================
-    // 5. AGGIUNGI RECENSIONE (AL VENDITORE)
-    // ==========================================
-    @PostMapping("/utente/{id}/recensione")
-    public String aggiungiRecensioneUtente(@PathVariable("id") Long idVenditore, 
-                                           @ModelAttribute("nuovaRecensione") Recensione recensione,
-                                           @AuthenticationPrincipal Object principal) {
-
-        Utente destinatario = this.userRepository.findById(idVenditore).orElse(null);
-        Utente autore = getUtenteLoggato(principal);
-
-        // Controlliamo che entrambi esistano e che l'autore non stia recensendo se stesso
-        if (destinatario != null && autore != null && !destinatario.getId().equals(autore.getId())) {
-            recensione.setId(null);
-            recensione.setAutore(autore);
-            recensione.setDestinatario(destinatario);
-            this.recensioneRepository.save(recensione);
-        }
-
-        return "redirect:/utente/" + idVenditore; // Torna al profilo appena recensito
-    }
-
-    // ==========================================
-    // 6. ELIMINA RECENSIONE
-    // ==========================================
-    @GetMapping("/recensione/elimina/{id}")
-    public String eliminaRecensione(@PathVariable("id") Long id,
-            @AuthenticationPrincipal Object principal) { 
-
-        Recensione recensione = this.recensioneRepository.findById(id).orElse(null);
-        Utente utenteLoggato = getUtenteLoggato(principal);
-
-        if (recensione != null && utenteLoggato != null) {
-            if ("ROLE_ADMIN".equals(utenteLoggato.getRuolo()) || (recensione.getAutore() != null && utenteLoggato.getEmail().equals(recensione.getAutore().getEmail()))) {
-                Long idVenditore = recensione.getDestinatario().getId();
-                this.recensioneRepository.delete(recensione);
-                return "redirect:/utente/" + idVenditore;
-            }
-        }
-        return "redirect:/";
-    }
-
-    // ==========================================
-    // 7. ELIMINA ARTICOLO (Dal proprio armadio)
+    // 6. ELIMINA ARTICOLO (Dal proprio armadio)
     // ==========================================
     @GetMapping("/articolo/elimina/{id}")
     public String eliminaArticolo(@PathVariable("id") Long id, 
@@ -284,95 +236,6 @@ public class ArticoloController {
             }
         }
         return "redirect:/armadio";
-    }
-
-    // ==========================================
-    // 8. IL MIO ARMADIO (Area Personale)
-    // ==========================================
-    @GetMapping("/armadio")
-    @org.springframework.transaction.annotation.Transactional
-    public String mostraMioArmadio(Model model, @AuthenticationPrincipal Object principal) {
-
-        Utente utenteLoggato = getUtenteLoggato(principal);
-        if (utenteLoggato == null) return "redirect:/login";
-
-        List<Articolo> mieiArticoli = this.articoloRepository.findByVenditore(utenteLoggato);
-
-        // Nuovo calcolo basato sulle recensioni dell'utente (non dell'articolo)
-        double mediaValutazioni = 0.0;
-        int totaleRecensioni = 0;
-        
-        if (utenteLoggato.getRecensioniRicevute() != null && !utenteLoggato.getRecensioniRicevute().isEmpty()) {
-            totaleRecensioni = utenteLoggato.getRecensioniRicevute().size();
-            int sommaStelle = 0;
-            for (Recensione r : utenteLoggato.getRecensioniRicevute()) {
-                sommaStelle += r.getValutazione();
-            }
-            mediaValutazioni = Math.round(((double) sommaStelle / totaleRecensioni) * 10.0) / 10.0;
-        }
-
-        model.addAttribute("utente", utenteLoggato);
-        model.addAttribute("mieiArticoli", mieiArticoli);
-        model.addAttribute("mediaValutazioni", mediaValutazioni);
-        model.addAttribute("recensioniRicevute", utenteLoggato.getRecensioniRicevute());
-
-        return "armadio";
-    }
-
-    // ==========================================
-    // 9. MODIFICA PROFILO UTENTE
-    // ==========================================
-    @PostMapping("/utente/modifica")
-    public String modificaProfiloUtente(@RequestParam("nome") String nome, 
-                                        @RequestParam("cognome") String cognome, 
-                                        @AuthenticationPrincipal Object principal) {
-        
-        Utente utente = getUtenteLoggato(principal);
-        
-        if (utente != null) {
-            utente.setNome(nome);
-            utente.setCognome(cognome);
-            this.userRepository.save(utente);
-        }
-        
-        return "redirect:/armadio";
-    }
-
-    // ==========================================
-    // 10. PROFILO PUBBLICO VENDITORE
-    // ==========================================
-    @GetMapping("/utente/{id}")
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public String mostraProfiloVenditore(@PathVariable("id") Long id, Model model, @AuthenticationPrincipal Object principal) {
-        
-        Utente venditore = this.userRepository.findById(id).orElse(null);
-        if (venditore == null) return "redirect:/";
-
-        List<Articolo> articoliVenditore = this.articoloRepository.findByVenditore(venditore);
-
-        double mediaValutazioni = 0.0;
-        int totaleRecensioni = 0;
-        if (venditore.getRecensioniRicevute() != null && !venditore.getRecensioniRicevute().isEmpty()) {
-            totaleRecensioni = venditore.getRecensioniRicevute().size();
-            int sommaStelle = 0;
-            for (Recensione r : venditore.getRecensioniRicevute()) {
-                sommaStelle += r.getValutazione();
-            }
-            mediaValutazioni = Math.round(((double) sommaStelle / totaleRecensioni) * 10.0) / 10.0;
-        }
-
-        model.addAttribute("venditore", venditore);
-        model.addAttribute("articoliVenditore", articoliVenditore);
-        model.addAttribute("mediaValutazioni", mediaValutazioni);
-        model.addAttribute("totaleRecensioni", totaleRecensioni);
-        model.addAttribute("nuovaRecensione", new Recensione()); 
-
-        Utente visitatore = getUtenteLoggato(principal);
-        if (visitatore != null) {
-            model.addAttribute("utente", visitatore);
-        }
-
-        return "profilo-utente";
     }
 
     // ==========================================
