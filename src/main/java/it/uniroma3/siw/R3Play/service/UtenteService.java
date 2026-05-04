@@ -41,6 +41,11 @@ public class UtenteService {
         return userRepository.existsByEmail(email);
     }
 
+    @Transactional(readOnly = true)
+    public java.util.List<Utente> cercaPerTesto(String testo) {
+        return userRepository.findByNomeOrCognomeContainingIgnoreCase(testo);
+    }
+
     // =============================================
     // OPERAZIONI DI SCRITTURA
     // =============================================

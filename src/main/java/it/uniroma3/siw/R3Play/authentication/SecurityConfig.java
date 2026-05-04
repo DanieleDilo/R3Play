@@ -49,6 +49,10 @@ public class SecurityConfig {
                 .defaultSuccessUrl("/vetrina", true)
                 .permitAll()
             )
+            .oauth2Login(oauth2 -> oauth2
+                .loginPage("/login")
+                .defaultSuccessUrl("/vetrina", true)
+            )
             .logout(logout -> logout
                 .logoutSuccessUrl("/")
                 .invalidateHttpSession(true)

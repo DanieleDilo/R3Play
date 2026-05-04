@@ -66,7 +66,12 @@ public class ArticoloController {
                 ? articoloService.cercaPerTesto(query)
                 : articoloService.trovaTutti();
 
+        List<Utente> utentiTrovati = (query != null && !query.isBlank())
+                ? utenteService.cercaPerTesto(query)
+                : List.of();
+
         model.addAttribute("articoli", articoli);
+        model.addAttribute("utentiTrovati", utentiTrovati);
         model.addAttribute("query", query);
         model.addAttribute("risultatiFiltro", query != null && !query.isBlank());
 

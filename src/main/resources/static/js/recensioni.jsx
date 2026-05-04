@@ -57,9 +57,18 @@ function FormRecensione({ venditoreId, onAggiunta }) {
         setInvio(true);
         setErrore(null);
         try {
+            const root = document.getElementById('recensioni-root');
+            const csrfToken = root.dataset.csrfToken;
+            const csrfHeader = root.dataset.csrfHeader;
+
+            const headers = { 'Content-Type': 'application/json' };
+            if (csrfToken && csrfHeader) {
+                headers[csrfHeader] = csrfToken;
+            }
+
             const resp = await fetch(`/api/recensioni/${venditoreId}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers,
                 body: JSON.stringify({ valutazione: parseInt(valutazione), testo })
             });
             const data = await resp.json();
@@ -127,7 +136,19 @@ function RecensioniApp() {
     }, []);
 
     const handleElimina = async (id) => {
-        const resp = await fetch(`/api/recensioni/${id}`, { method: 'DELETE' });
+        const root = document.getElementById('recensioni-root');
+        const csrfToken = root.dataset.csrfToken;
+        const csrfHeader = root.dataset.csrfHeader;
+
+        const headers = {};
+        if (csrfToken && csrfHeader) {
+            headers[csrfHeader] = csrfToken;
+        }
+
+        const resp = await fetch(`/api/recensioni/${id}`, { 
+            method: 'DELETE',
+            headers: headers
+        });
         if (resp.ok) setRecensioni(prev => prev.filter(r => r.id !== id));
     };
 

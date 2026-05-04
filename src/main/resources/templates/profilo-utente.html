@@ -52,6 +52,20 @@
             </div>
         </div>
 
+        <hr style="margin: 3rem 0; border: none; border-top: 1px solid var(--border);">
+
+        <!-- React Component Mount Point -->
+        <div id="recensioni-root"
+             th:data-venditore-id="${venditore.id}"
+             th:data-venditore-nome="${venditore.nome}"
+             th:data-utente-email="${utente != null ? utente.email : ''}"
+             th:data-utente-ruolo="${utente != null ? utente.ruolo : ''}"
+             th:data-can-review="${utente != null and utente.email != venditore.email}"
+             th:data-csrf-token="${_csrf != null ? _csrf.token : ''}"
+             th:data-csrf-header="${_csrf != null ? _csrf.headerName : ''}">
+        </div>
+    </div>
+
     <!-- React + Babel (CDN, no build step richiesto) -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
