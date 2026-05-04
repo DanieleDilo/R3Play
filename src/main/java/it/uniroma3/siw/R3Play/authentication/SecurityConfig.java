@@ -2,51 +2,79 @@ package it.uniroma3.siw.R3Play.authentication;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+/**
+ * CONFIGURAZIONE DELLA SICUREZZA
+ *
+ * Definisce:
+ * - Le rotte pubbliche (accessibili senza login)
+ * - Le rotte protette (richiedono autenticazione)
+ * - Login classico (form con email)
+ * - Login OAuth2 (Google)
+ * - Logout
+ * - Abilitazione @PreAuthorize per la protezione ADMIN a livello di metodo
+ */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity // Abilita @PreAuthorize nei controller
 public class SecurityConfig {
 
-    // 1. Diciamo a Spring di usare BCrypt per criptare/decriptare le password
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-   @Bean
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .authorizeHttpRequests(authorize -> authorize
-                // 1. Risorse di base e pagine di benvenuto permesse a tutti
-                .requestMatchers("/", "/vetrina", "/css/**", "/images/**", "/uploads/**", "/error", "/favicon.ico", "/login", "/registrati").permitAll()
+            .authorizeHttpRequests(auth -> auth
+                // === ROTTE PUBBLICHE ===
+                // Homepage, vetrina, dettaglio articolo/utente: visibili a tutti
+                .requestMatchers(
+                    "/", "/vetrina", "/login", "/registrati", "/error",
+                    "/css/**", "/images/**", "/uploads/**", "/favicon.ico",
+                    "/articolo/**", "/utente/**",
+                    // React e risorse statiche
+                    "/react/**", "/js/**"
+                ).permitAll()
 
-                // 2. Dettaglio articolo pubblico
-                .requestMatchers("/articolo/{id:[0-9]+}").permitAll()
+                // === ROTTE PROTETTE (utenti autenticati) ===
+                // Armadio, pubblicazione articoli, recensioni: richiedono login
+                .requestMatchers(
+                    "/armadio", "/articolo/nuovo", "/articolo/modifica/**",
+                    "/articolo/elimina/**", "/utente/modifica",
+                    "/recensione/**"
+                ).authenticated()
 
-                // 3. Profilo pubblico utente
-                .requestMatchers("/utente/{id:[0-9]+}").permitAll()
+                // === ROTTE ADMIN ===
+                // L'analisi performance è protetta sia qui che con @PreAuthorize
+                .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
 
-                // 4. Qualsiasi altra richiesta (incluso /articolo/nuovo, /armadio, ecc.) viene bloccata se non sei loggato
+                // Tutto il resto richiede autenticazione
                 .anyRequest().authenticated()
             )
-            // ... (il resto della configurazione di formLogin e oauth2Login rimane identico)
-            // 2. CONFIGURAZIONE LOGIN CLASSICO (Form)
+
+            // --- LOGIN CLASSICO (form con email e password) ---
             .formLogin(form -> form
-                .loginPage("/login") // Diremo a Spring dove trovare la nostra pagina HTML personalizzata
-                .usernameParameter("email") // Usiamo l'email invece dello "username" standard
+                .loginPage("/login")
+                .usernameParameter("email")         // usiamo email come username
                 .defaultSuccessUrl("/vetrina", true)
                 .permitAll()
             )
-            // 3. CONFIGURAZIONE OAUTH2 (Google)
+
+            // --- LOGIN OAUTH2 (Google) ---
             .oauth2Login(oauth2 -> oauth2
-                .loginPage("/login") // Rimandiamo alla stessa pagina HTML per scegliere!
-                .defaultSuccessUrl("/vetrina", true) 
+                .loginPage("/login")
+                .defaultSuccessUrl("/vetrina", true)
             )
+
+            // --- LOGOUT ---
             .logout(logout -> logout
                 .logoutSuccessUrl("/")
                 .invalidateHttpSession(true)
