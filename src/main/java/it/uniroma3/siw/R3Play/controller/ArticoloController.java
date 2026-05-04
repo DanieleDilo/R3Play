@@ -1,279 +1,339 @@
 package it.uniroma3.siw.R3Play.controller;
 
-import it.uniroma3.siw.R3Play.model.Articolo;
-import it.uniroma3.siw.R3Play.model.Recensione;
-import it.uniroma3.siw.R3Play.model.Utente;
-import it.uniroma3.siw.R3Play.service.ArticoloService;
-import it.uniroma3.siw.R3Play.service.RecensioneService;
-import it.uniroma3.siw.R3Play.service.UtenteService;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
-/**
- * CONTROLLER LAYER — Articoli
- *
- * Responsabilità: gestire le richieste HTTP e delegare la logica ai Service.
- * NON contiene logica di business (niente if/else su regole di dominio qui).
- * NON accede direttamente ai Repository.
- */
+import it.uniroma3.siw.R3Play.model.Articolo;
+import it.uniroma3.siw.R3Play.model.Utente;
+import it.uniroma3.siw.R3Play.repository.ArticoloRepository;
+import it.uniroma3.siw.R3Play.repository.UserRepository;
+
+@SuppressWarnings("null")
 @Controller
 public class ArticoloController {
 
     @Autowired
-    private ArticoloService articoloService;
+    private ArticoloRepository articoloRepository;
 
     @Autowired
-    private RecensioneService recensioneService;
+    private UserRepository userRepository;
 
-    @Autowired
-    private UtenteService utenteService;
+    @Value("${upload.dir:uploads}")
+    private String uploadDir;
 
-    // === ATTRIBUTO GLOBALE: utente loggato disponibile in tutti i template ===
     @ModelAttribute("nomeLoggato")
     public String populateNomeLoggato(@AuthenticationPrincipal Object principal) {
-        Utente u = risolviUtente(principal);
-        return u != null ? buildNome(u) : null;
+        Utente utenteLoggato = getUtenteLoggato(principal);
+        return utenteLoggato != null ? buildNomeCompleto(utenteLoggato) : null;
     }
 
     @ModelAttribute("emailLoggata")
     public String populateEmailLoggata(@AuthenticationPrincipal Object principal) {
-        Utente u = risolviUtente(principal);
-        return u != null ? u.getEmail() : null;
+        Utente utenteLoggato = getUtenteLoggato(principal);
+        return utenteLoggato != null ? utenteLoggato.getEmail() : null;
     }
 
-    // =========================================================
-    // WELCOME / SPLASH
-    // =========================================================
+    // ==========================================
+    // 1. WELCOME / SPLASH
+    // ==========================================
     @GetMapping("/")
-    public String welcome(@AuthenticationPrincipal Object principal) {
-        return risolviUtente(principal) != null ? "redirect:/vetrina" : "welcome";
+    public String mostraWelcome(Model model, @AuthenticationPrincipal Object principal) {
+        Utente utenteLoggato = getUtenteLoggato(principal);
+        if (utenteLoggato != null) {
+            return "redirect:/vetrina";
+        }
+        return "welcome";
     }
 
-    // =========================================================
-    // VETRINA (lista articoli)
-    // =========================================================
+    // ==========================================
+    // 2. VETRINA
+    // ==========================================
     @GetMapping("/vetrina")
-    public String vetrina(@RequestParam(name = "q", required = false) String query,
-                          Model model, @AuthenticationPrincipal Object principal) {
+    public String mostraVetrina(@RequestParam(name = "q", required = false) String query,
+            Model model, @AuthenticationPrincipal Object principal) {
 
-        List<Articolo> articoli = (query != null && !query.isBlank())
-                ? articoloService.cercaPerTesto(query)
-                : articoloService.trovaTutti();
+        Iterable<Articolo> articoli;
+        if (query != null && !query.isBlank()) {
+            articoli = this.articoloRepository.findByNomeContainingIgnoreCaseOrDescrizioneContainingIgnoreCase(query, query);
+            model.addAttribute("query", query);
+            model.addAttribute("risultatiFiltro", true);
+        } else {
+            articoli = this.articoloRepository.findAll();
+            model.addAttribute("risultatiFiltro", false);
+        }
 
         model.addAttribute("articoli", articoli);
-        model.addAttribute("query", query);
-        model.addAttribute("risultatiFiltro", query != null && !query.isBlank());
 
-        Utente u = risolviUtente(principal);
-        if (u != null) {
-            model.addAttribute("emailLoggata", u.getEmail());
-            model.addAttribute("nomeLoggato", buildNome(u));
+        Utente utenteLoggato = getUtenteLoggato(principal);
+        if (utenteLoggato != null) {
+            model.addAttribute("emailLoggata", utenteLoggato.getEmail());
+            model.addAttribute("nomeLoggato", buildNomeCompleto(utenteLoggato));
         }
+
         return "vetrina";
     }
 
-    // =========================================================
-    // DETTAGLIO ARTICOLO
-    // =========================================================
-    @GetMapping("/articolo/{id}")
-    public String dettaglioArticolo(@PathVariable Long id, Model model,
-                                    @AuthenticationPrincipal Object principal) {
-        Articolo articolo = articoloService.trovaPerId(id).orElse(null);
-        if (articolo == null) return "redirect:/vetrina";
-
-        Utente u = risolviUtente(principal);
-        model.addAttribute("articolo", articolo);
-        model.addAttribute("nomeLoggato", u != null ? buildNome(u) : "Ospite");
-        model.addAttribute("emailLoggata", u != null ? u.getEmail() : null);
-        return "dettaglio-articolo";
-    }
-
-    // =========================================================
-    // NUOVO ARTICOLO
-    // =========================================================
+    // ==========================================
+    // 3. NUOVO ARTICOLO
+    // ==========================================
     @GetMapping("/articolo/nuovo")
-    public String formNuovoArticolo(Model model) {
+    public String mostraFormNuovoArticolo(Model model) {
         model.addAttribute("articolo", new Articolo());
         return "nuovo-articolo";
     }
 
     @PostMapping("/articolo/nuovo")
-    public String salvaNuovoArticolo(@ModelAttribute Articolo articolo,
-                                     @RequestParam("fileImmagine") MultipartFile[] immagini,
-                                     @AuthenticationPrincipal Object principal) {
-        Utente venditore = risolviUtente(principal);
-        if (venditore == null) return "redirect:/login";
-        articoloService.salvaArticolo(articolo, venditore, immagini);
+    public String salvaNuovoArticolo(@ModelAttribute("articolo") Articolo articolo,
+            @RequestParam("fileImmagine") MultipartFile[] immagini,
+            @AuthenticationPrincipal Object principal) {
+
+        Utente venditore = getUtenteLoggato(principal);
+        if (venditore != null) {
+            articolo.setVenditore(venditore);
+        }
+
+        try {
+            Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            boolean firstImage = true;
+            for (MultipartFile immagine : immagini) {
+                if (immagine != null && !immagine.isEmpty()) {
+                    String fileName = System.currentTimeMillis() + "_" + immagine.getOriginalFilename();
+                    Path filePath = uploadPath.resolve(fileName);
+                    Files.copy(immagine.getInputStream(), filePath);
+                    String fileUrl = "/uploads/" + fileName;
+                    if (firstImage) {
+                        articolo.setUrlFoto(fileUrl);
+                        firstImage = false;
+                    }
+                    articolo.addFotoUrl(fileUrl);
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Errore immagine: " + e.getMessage());
+        }
+
+        this.articoloRepository.save(articolo);
         return "redirect:/armadio";
     }
 
-    // =========================================================
-    // MODIFICA ARTICOLO
-    // =========================================================
+    // ==========================================
+    // 4. MODIFICA ARTICOLO
+    // ==========================================
     @GetMapping("/articolo/modifica/{id}")
-    public String formModificaArticolo(@PathVariable Long id, Model model,
-                                       @AuthenticationPrincipal Object principal) {
-        Articolo articolo = articoloService.trovaPerId(id).orElse(null);
-        Utente u = risolviUtente(principal);
-        if (articolo == null || u == null) return "redirect:/";
-        model.addAttribute("articolo", articolo);
-        return "modifica-articolo";
+    public String mostraFormModifica(@PathVariable("id") Long id, Model model,
+            @AuthenticationPrincipal Object principal) {
+
+        Articolo articolo = this.articoloRepository.findById(id).orElse(null);
+        Utente utenteLoggato = getUtenteLoggato(principal);
+
+        if (articolo == null || utenteLoggato == null) return "redirect:/";
+
+        if ("ROLE_ADMIN".equals(utenteLoggato.getRuolo()) || (articolo.getVenditore() != null && utenteLoggato.getEmail().equals(articolo.getVenditore().getEmail()))) {
+            model.addAttribute("articolo", articolo);
+            return "modifica-articolo";
+        }
+
+        return "redirect:/";
     }
 
     @PostMapping("/articolo/modifica/{id}")
-    public String salvaModificaArticolo(@PathVariable Long id,
-                                        @ModelAttribute Articolo datiModificati,
-                                        @RequestParam("fileImmagine") MultipartFile[] immagini,
-                                        @AuthenticationPrincipal Object principal) {
-        Utente u = risolviUtente(principal);
-        if (u == null) return "redirect:/login";
-        try {
-            articoloService.modificaArticolo(id, datiModificati, immagini, u);
-        } catch (SecurityException e) {
-            return "redirect:/";
+    public String salvaModificaArticolo(@PathVariable("id") Long id,
+            @ModelAttribute("articolo") Articolo articoloModificato,
+            @RequestParam("fileImmagine") MultipartFile[] immagini,
+            @AuthenticationPrincipal Object principal) {
+        
+        Articolo articoloEsistente = this.articoloRepository.findById(id).orElse(null);
+        Utente utenteLoggato = getUtenteLoggato(principal);
+
+        if (articoloEsistente != null && utenteLoggato != null) {
+            if ("ROLE_ADMIN".equals(utenteLoggato.getRuolo()) || (articoloEsistente.getVenditore() != null && utenteLoggato.getEmail().equals(articoloEsistente.getVenditore().getEmail()))) {
+                articoloEsistente.setNome(articoloModificato.getNome());
+                articoloEsistente.setDescrizione(articoloModificato.getDescrizione());
+                articoloEsistente.setPrezzo(articoloModificato.getPrezzo());
+
+                try {
+                    Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+                    if (!Files.exists(uploadPath)) {
+                        Files.createDirectories(uploadPath);
+                    }
+
+                    for (MultipartFile immagine : immagini) {
+                        if (immagine != null && !immagine.isEmpty()) {
+                            String fileName = System.currentTimeMillis() + "_" + immagine.getOriginalFilename();
+                            Path filePath = uploadPath.resolve(fileName);
+                            Files.copy(immagine.getInputStream(), filePath);
+                            String fileUrl = "/uploads/" + fileName;
+                            articoloEsistente.addFotoUrl(fileUrl);
+                            if (articoloEsistente.getUrlFoto() == null) {
+                                articoloEsistente.setUrlFoto(fileUrl);
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    System.out.println("Errore immagine durante la modifica: " + e.getMessage());
+                }
+
+                this.articoloRepository.save(articoloEsistente);
+            }
         }
         return "redirect:/armadio";
     }
 
-    // =========================================================
-    // ELIMINA ARTICOLO
-    // =========================================================
+    // ==========================================
+    // 5. DETTAGLIO ARTICOLO
+    // ==========================================
+    @GetMapping("/articolo/{id}")
+    public String mostraDettaglioArticolo(@PathVariable("id") Long id, Model model,
+            @AuthenticationPrincipal Object principal) {
+        
+        Articolo articolo = this.articoloRepository.findById(id).orElse(null);
+        if (articolo == null) return "redirect:/";
+
+        Utente utenteLoggato = getUtenteLoggato(principal);
+        if (utenteLoggato != null) {
+            model.addAttribute("emailLoggata", utenteLoggato.getEmail());
+            model.addAttribute("nomeLoggato", buildNomeCompleto(utenteLoggato));
+        } else {
+            model.addAttribute("nomeLoggato", "Ospite");
+        }
+
+        model.addAttribute("articolo", articolo);
+        return "dettaglio-articolo";
+    }
+
+    // ==========================================
+    // 6. ELIMINA ARTICOLO (Dal proprio armadio)
+    // ==========================================
     @GetMapping("/articolo/elimina/{id}")
-    public String eliminaArticolo(@PathVariable Long id, @AuthenticationPrincipal Object principal) {
-        Utente u = risolviUtente(principal);
-        if (u == null) return "redirect:/login";
-        try {
-            articoloService.eliminaArticolo(id, u);
-        } catch (SecurityException e) {
-            return "redirect:/";
-        }
-        return "redirect:/armadio";
-    }
-
-    // =========================================================
-    // ARMADIO (profilo privato dell'utente)
-    // =========================================================
-    @GetMapping("/armadio")
-    public String armadio(Model model, @AuthenticationPrincipal Object principal) {
-        Utente u = risolviUtente(principal);
-        if (u == null) return "redirect:/login";
-
-        List<Articolo> mieiArticoli = articoloService.trovaPerVenditore(u);
-        double media = recensioneService.calcolaMediaValutazione(u);
-        long totaleRecensioni = recensioneService.contaRecensioniRicevute(u);
-
-        model.addAttribute("utente", u);
-        model.addAttribute("mieiArticoli", mieiArticoli);
-        model.addAttribute("mediaValutazioni", media);
-        model.addAttribute("totaleRecensioni", totaleRecensioni);
-        model.addAttribute("recensioniRicevute", recensioneService.trovaRecensioniRicevute(u));
-        return "armadio";
-    }
-
-    // =========================================================
-    // PROFILO VENDITORE (pubblico)
-    // =========================================================
-    @GetMapping("/utente/{id}")
-    public String profiloVenditore(@PathVariable Long id, Model model,
-                                   @AuthenticationPrincipal Object principal) {
-        Utente venditore = utenteService.trovaPerId(id).orElse(null);
-        if (venditore == null) return "redirect:/";
-
-        List<Articolo> articoli = articoloService.trovaPerVenditore(venditore);
-        double media = recensioneService.calcolaMediaValutazione(venditore);
-        long totale = recensioneService.contaRecensioniRicevute(venditore);
-
-        model.addAttribute("venditore", venditore);
-        model.addAttribute("articoliVenditore", articoli);
-        model.addAttribute("mediaValutazioni", media);
-        model.addAttribute("totaleRecensioni", totale);
-        model.addAttribute("recensioni", recensioneService.trovaRecensioniRicevute(venditore));
-        model.addAttribute("nuovaRecensione", new Recensione());
-
-        Utente visitatore = risolviUtente(principal);
-        if (visitatore != null) model.addAttribute("utente", visitatore);
-
-        return "profilo-utente";
-    }
-
-    // =========================================================
-    // MODIFICA PROFILO
-    // =========================================================
-    @PostMapping("/utente/modifica")
-    public String modificaProfilo(@RequestParam String nome, @RequestParam String cognome,
+    public String eliminaArticolo(@PathVariable("id") Long id, 
                                   @AuthenticationPrincipal Object principal) {
-        Utente u = risolviUtente(principal);
-        if (u != null) utenteService.aggiornaProfilo(u, nome, cognome);
+        
+        Articolo articolo = this.articoloRepository.findById(id).orElse(null);
+        Utente utenteLoggato = getUtenteLoggato(principal);
+        
+        if (articolo != null && utenteLoggato != null) {
+            if ("ROLE_ADMIN".equals(utenteLoggato.getRuolo()) || (articolo.getVenditore() != null && utenteLoggato.getEmail().equals(articolo.getVenditore().getEmail()))) {
+                this.articoloRepository.delete(articolo);
+            }
+        }
         return "redirect:/armadio";
     }
 
-    // =========================================================
-    // RECENSIONI
-    // =========================================================
-    @PostMapping("/utente/{id}/recensione")
-    public String aggiungiRecensione(@PathVariable Long id,
-                                     @ModelAttribute("nuovaRecensione") Recensione recensione,
-                                     @AuthenticationPrincipal Object principal) {
-        Utente autore = risolviUtente(principal);
-        if (autore == null) return "redirect:/login";
-        try {
-            recensioneService.aggiungiRecensione(id, recensione, autore);
-        } catch (IllegalStateException e) {
-            // Già recensito o auto-recensione: ignoriamo silenziosamente
-        }
-        return "redirect:/utente/" + id;
-    }
-
-    @GetMapping("/recensione/elimina/{id}")
-    public String eliminaRecensione(@PathVariable Long id, @AuthenticationPrincipal Object principal) {
-        Utente u = risolviUtente(principal);
-        if (u == null) return "redirect:/login";
-        try {
-            Long idVenditore = recensioneService.eliminaRecensione(id, u);
-            return "redirect:/utente/" + idVenditore;
-        } catch (SecurityException e) {
-            return "redirect:/";
-        }
-    }
-
-    // =========================================================
-    // METODO HELPER: risolve l'utente dal principal (LOCAL o GOOGLE)
-    // =========================================================
-    private Utente risolviUtente(Object principal) {
+    // ==========================================
+    // METODO HELPER UNIVERSALE PER IL LOGIN
+    // ==========================================
+    private Utente getUtenteLoggato(Object principal) {
         if (principal == null) return null;
 
-        if (principal instanceof org.springframework.security.oauth2.core.user.OAuth2User oauth) {
+        String email = null;
+        String nome = null;
+        String cognome = null;
+        String provider = null;
+
+        if (principal instanceof org.springframework.security.oauth2.core.user.OAuth2User) {
+            org.springframework.security.oauth2.core.user.OAuth2User oauth = (org.springframework.security.oauth2.core.user.OAuth2User) principal;
             Object emailAttr = oauth.getAttribute("email");
-            if (emailAttr == null) return null;
-            String email = emailAttr.toString();
-            String nome = getAttr(oauth, "given_name", getAttr(oauth, "name", email.split("@")[0]));
-            String cognome = getAttr(oauth, "family_name", "");
-            return utenteService.recuperaOCreaUtenteGoogle(email, nome, cognome);
+            email = emailAttr != null ? emailAttr.toString() : null;
+            provider = "GOOGLE";
+
+            Object givenName = oauth.getAttribute("given_name");
+            Object familyName = oauth.getAttribute("family_name");
+            Object fullName = oauth.getAttribute("name");
+
+            if (givenName != null) {
+                nome = givenName.toString();
+            }
+            if (familyName != null) {
+                cognome = familyName.toString();
+            }
+            if ((nome == null || nome.isBlank()) && fullName != null) {
+                String[] parts = fullName.toString().trim().split(" ");
+                if (parts.length > 0) {
+                    nome = parts[0];
+                    if (parts.length > 1) {
+                        cognome = parts[parts.length - 1];
+                    }
+                }
+            }
+            if ((nome == null || nome.isBlank()) && email != null) {
+                nome = email.split("@")[0];
+            }
+        } else if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+            email = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
         }
 
-        if (principal instanceof org.springframework.security.core.userdetails.UserDetails ud) {
-            return utenteService.trovaPerEmail(ud.getUsername()).orElse(null);
+        if (email != null) {
+            Utente utente = this.userRepository.findByEmail(email).orElse(null);
+            if (utente == null && "GOOGLE".equals(provider)) {
+                utente = new Utente();
+                utente.setEmail(email);
+                utente.setNome(capitalize(nome != null ? nome : "Utente"));
+                utente.setCognome(capitalize(cognome != null ? cognome : "Google"));
+                utente.setProvider(provider);
+                this.userRepository.save(utente);
+            } else if (utente != null && "GOOGLE".equals(provider)) {
+                boolean dirty = false;
+                if ((utente.getNome() == null || utente.getNome().isBlank()) && nome != null) {
+                    utente.setNome(capitalize(nome));
+                    dirty = true;
+                }
+                if ((utente.getCognome() == null || utente.getCognome().isBlank()) && cognome != null) {
+                    utente.setCognome(capitalize(cognome));
+                    dirty = true;
+                }
+                if (dirty) {
+                    this.userRepository.save(utente);
+                }
+            }
+            return utente;
         }
-
         return null;
     }
 
-    private String getAttr(org.springframework.security.oauth2.core.user.OAuth2User oauth,
-                            String key, String fallback) {
-        Object val = oauth.getAttribute(key);
-        return (val != null && !val.toString().isBlank()) ? val.toString() : fallback;
+   private String buildNomeCompleto(Utente utente) {
+        if (utente == null) return "Ospite";
+        
+        String nome = (utente.getNome() != null) ? utente.getNome() : "";
+        String cognome = (utente.getCognome() != null) ? utente.getCognome() : "";
+        
+        if (nome.isBlank() && cognome.isBlank()) {
+            return utente.getEmail().split("@")[0]; // Fallback sull'email
+        }
+        
+        return (nome + " " + cognome).trim();
     }
 
-    private String buildNome(Utente u) {
-        String n = u.getNome() != null ? u.getNome() : "";
-        String c = u.getCognome() != null ? u.getCognome() : "";
-        return (n + " " + c).trim().isBlank() ? u.getEmail().split("@")[0] : (n + " " + c).trim();
+   // Rendi il metodo capitalize resistente ai null
+    private String capitalize(String text) {
+        if (text == null || text.isBlank()) return "Utente"; // Default se manca
+        
+        String[] words = text.trim().split("\\s+");
+        StringBuilder builder = new StringBuilder();
+        for (String word : words) {
+            if (word.isEmpty()) continue;
+            if (builder.length() > 0) builder.append(" ");
+            builder.append(word.substring(0, 1).toUpperCase())
+                   .append(word.substring(1).toLowerCase());
+        }
+        return builder.toString();
     }
 }
