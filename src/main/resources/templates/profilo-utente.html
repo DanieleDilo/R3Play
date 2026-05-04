@@ -52,55 +52,10 @@
             </div>
         </div>
 
-        <div th:if="${utente != null and utente.id != venditore.id}" class="form-box fade-in delay-3" style="margin-top: 4rem;">
-            <h3 style="margin-bottom: 1.5rem; color: var(--primary-neon);">Lascia un feedback</h3>
-            <form th:action="@{'/utente/' + ${venditore.id} + '/recensione'}" th:object="${nuovaRecensione}" method="POST">
-                <div class="form-group">
-                    <label class="form-label">Valutazione (1-5)</label>
-                    <select th:field="*{valutazione}" class="form-input" style="background: rgba(0,0,0,0.5);" required>
-                        <option value="5">⭐⭐⭐⭐⭐ Eccellente</option>
-                        <option value="4">⭐⭐⭐⭐ Buono</option>
-                        <option value="3">⭐⭐⭐ Normale</option>
-                        <option value="2">⭐⭐ Scarso</option>
-                        <option value="1">⭐ Pessimo</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Commento</label>
-                    <textarea th:field="*{testo}" class="form-input" rows="3" placeholder="Com'è andata la trattativa?" required></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Pubblica Feedback</button>
-            </form>
-        </div>
-
-        <div class="recensioni-section fade-in delay-3" style="margin-top: 4rem; margin-bottom: 5rem;">
-            <h2 style="color: var(--primary-neon); margin-bottom: 2rem; text-align: center;">Cosa dicono di <span th:text="${venditore.nome ?: 'questo utente'}"></span></h2>
-            
-            <div th:if="${venditore.recensioniRicevute != null and !venditore.recensioniRicevute.isEmpty()}">
-                <div class="review-card" th:each="rec : ${venditore.recensioniRicevute}">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <div style="display: flex; align-items: center; gap: 1rem;">
-                            <span style="font-size: 1.2rem; color: #ffd700; display: inline-flex; gap: 0.15rem;">
-                                <span th:each="i : ${#numbers.sequence(1, rec.valutazione)}">★</span>
-                            </span>
-                            
-                            <strong style="color: var(--text-light); font-size: 0.95rem;">da 
-                                <span th:text="${rec.autore != null ? rec.autore.nome + ' ' + rec.autore.cognome : 'Utente'}" style="color: var(--primary-neon);">Utente</span>
-                            </strong>
-                        </div>
-                    </div>
-                    <p style="color: var(--text-main); font-size: 1rem; line-height: 1.6;" th:text="${rec.testo}">Testo recensione...</p>
-                    
-                    <div th:if="${(utente != null and utente.id == rec.autore.id) or #authorization.expression('hasAuthority(''ROLE_ADMIN'')')}" style="margin-top: 1rem; text-align: right;">
-                        <a th:href="@{'/recensione/elimina/' + ${rec.id}}" style="color: #ff4d4d; font-size: 0.85rem; text-decoration: underline;" onclick="return confirm('Sicuro di voler eliminare questo feedback?')">Elimina Feedback</a>
-                    </div>
-                </div>
-            </div>
-            
-            <div th:unless="${venditore.recensioniRicevute != null and !venditore.recensioniRicevute.isEmpty()}" style="text-align: center; color: var(--text-dim); padding: 2rem; border: 1px dashed var(--glass-border); border-radius: var(--radius-md);">
-                Nessun feedback ricevuto. Sii il primo a recensire!
-            </div>
-        </div>
-    </div>
+    <!-- React + Babel (CDN, no build step richiesto) -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="text/babel" src="/js/recensioni.jsx"></script>
 </body>
 </html>

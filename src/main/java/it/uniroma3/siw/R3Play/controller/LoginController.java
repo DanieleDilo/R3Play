@@ -1,59 +1,64 @@
 package it.uniroma3.siw.R3Play.controller;
 
+import it.uniroma3.siw.R3Play.model.Utente;
+import it.uniroma3.siw.R3Play.service.UtenteService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import it.uniroma3.siw.R3Play.model.Utente;
-import it.uniroma3.siw.R3Play.repository.UserRepository;
-
+/**
+ * CONTROLLER LAYER — Login e Registrazione
+ *
+ * Gestisce le richieste HTTP per autenticazione.
+ * Delega la logica di registrazione a UtenteService.
+ */
 @Controller
 public class LoginController {
 
     @Autowired
-    private UserRepository userRepository;
+    private UtenteService utenteService;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder; // Ci serve per criptare la password!
-
-    // Mostra la pagina di Login personalizzata
     @GetMapping("/login")
-    public String mostraPaginaLogin() {
+    public String mostraLogin() {
         return "login";
     }
 
-    // Mostra la pagina per registrarsi (creare un nuovo account)
     @GetMapping("/registrati")
     public String mostraFormRegistrazione(Model model) {
         model.addAttribute("utente", new Utente());
         return "registrazione";
     }
 
-    // Riceve i dati dal form di registrazione
+    /**
+     * Gestisce la registrazione di un nuovo utente.
+     * Tutta la logica (controllo duplicati, encoding password) è nel service.
+     */
     @PostMapping("/registrati")
-    public String registraNuovoUtente(@ModelAttribute("utente") Utente utente, Model model) {
-        
-        // 1. Controllo se l'email esiste già
-        if (this.userRepository.findByEmail(utente.getEmail()).isPresent()) {
-            model.addAttribute("errore", "Questa email è già registrata. Prova a fare il login!");
+    public String registraNuovoUtente(@ModelAttribute("utente") Utente utente,
+                                      @RequestParam(value = "confermaPassword", required = false) String confermaPassword,
+                                      Model model) {
+        // Validazione password
+        if (confermaPassword != null && !utente.getPassword().equals(confermaPassword)) {
+            model.addAttribute("errore", "Le password non coincidono.");
             return "registrazione";
         }
 
-        // 2. Criptiamo la password prima di salvarla!
-        String passwordCriptata = passwordEncoder.encode(utente.getPassword());
-        utente.setPassword(passwordCriptata);
-        
-        // 3. Salviamo chi è il "provider" (per distinguerli da Google)
-        utente.setProvider("LOCAL");
+        try {
+            utenteService.registraUtente(
+                utente.getNome(),
+                utente.getCognome(),
+                utente.getEmail(),
+                utente.getPassword()
+            );
+        } catch (IllegalStateException e) {
+            model.addAttribute("errore", "Email già registrata. Prova a fare il login!");
+            return "registrazione";
+        }
 
-        // 4. Salvo nel DB
-        this.userRepository.save(utente);
-
-        // 5. Rimando alla pagina di login con un messaggio di successo
         return "redirect:/login?registrato=true";
     }
 }

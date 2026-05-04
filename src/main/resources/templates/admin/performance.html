@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisi Prestazioni JPA - R3Play Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .perf-container { max-width: 960px; margin: 2rem auto; padding: 0 1.5rem; }
+        .perf-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 1.8rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.2s;
+        }
+        .perf-card:hover { transform: translateY(-3px); }
+        .perf-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+        .perf-nome { font-size: 1.2rem; font-weight: 700; color: #e0e0e0; }
+        .perf-tempo {
+            font-size: 2.2rem; font-weight: 800;
+            background: linear-gradient(135deg, #00e676, #1de9b6);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .perf-badge {
+            display: inline-block; padding: 4px 12px; border-radius: 20px;
+            font-size: 0.78rem; font-weight: 600; margin-bottom: 0.8rem;
+        }
+        .badge-cattivo  { background: rgba(255,80,80,0.2);  color: #ff5050; border: 1px solid rgba(255,80,80,0.3); }
+        .badge-ottimo   { background: rgba(0,230,118,0.15); color: #00e676; border: 1px solid rgba(0,230,118,0.3); }
+        .perf-stat { display: flex; gap: 2rem; margin: 0.8rem 0; flex-wrap: wrap; }
+        .stat-item { text-align: center; }
+        .stat-label { font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-size: 1.4rem; font-weight: 700; color: #fff; }
+        .perf-spiegazione { 
+            font-size: 0.88rem; color: #aaa; line-height: 1.6;
+            background: rgba(0,0,0,0.3); border-radius: 8px; padding: 0.8rem 1rem;
+            border-left: 3px solid rgba(0,230,118,0.5);
+            margin-top: 0.8rem;
+        }
+        .perf-valutazione { font-size: 0.95rem; margin-top: 0.6rem; font-weight: 600; }
+        .conclusion-box {
+            background: linear-gradient(135deg, rgba(0,230,118,0.1), rgba(29,233,182,0.05));
+            border: 1px solid rgba(0,230,118,0.3);
+            border-radius: 16px; padding: 2rem; margin-top: 2rem;
+        }
+        .conclusion-box h3 { color: #00e676; margin-bottom: 1rem; }
+        .conclusion-box p { color: #ccc; line-height: 1.7; }
+        table.compare { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        table.compare th, table.compare td { 
+            padding: 0.7rem 1rem; text-align: left; 
+            border-bottom: 1px solid rgba(255,255,255,0.07); font-size: 0.88rem;
+        }
+        table.compare th { color: #888; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; }
+        table.compare td { color: #ccc; }
+        .rank-1 { color: #00e676; font-weight: 700; }
+        .rank-bad { color: #ff5050; }
+    </style>
+</head>
+<body class="fade-in">
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="/vetrina" class="logo">R3Play</a>
+            <div class="nav-actions">
+                <span style="color: #888; font-size: 0.9rem;">🔒 Pannello Admin</span>
+                <form action="/logout" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-ghost">Esci</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="perf-container">
+        <div style="margin-bottom: 2rem;">
+            <h1 class="section-title" style="font-size: 2rem; text-align: left;">
+                📊 Analisi Prestazioni JPA
+            </h1>
+            <p style="color: #888; margin-top: 0.5rem;">
+                Confronto sperimentale tra le strategie di fetch per il caricamento degli articoli.
+                Caso d'uso: <strong style="color:#aaa">Vetrina — lista di tutti gli articoli con venditore e foto</strong>.
+            </p>
+        </div>
+
+        <!-- Risultati per ogni strategia -->
+        <div th:each="entry : ${risultati}">
+            <div class="perf-card">
+                <div class="perf-header">
+                    <div>
+                        <div class="perf-nome" th:text="${entry.value.nomeStrategia}">Strategia</div>
+                        <div class="perf-valutazione" th:text="${entry.value.valutazione}">Valutazione</div>
+                    </div>
+                    <div class="perf-tempo" th:text="${entry.value.durataMs} + ' ms'">0 ms</div>
+                </div>
+
+                <div class="perf-stat">
+                    <div class="stat-item">
+                        <div class="stat-label">Query SQL generate</div>
+                        <div class="stat-value"
+                             th:classappend="${entry.value.numeroQuery > 5 ? 'rank-bad' : 'rank-1'}"
+                             th:text="${entry.value.numeroQuery}">N</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Articoli caricati</div>
+                        <div class="stat-value" th:text="${entry.value.numeroArticoli}">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Tempo risposta</div>
+                        <div class="stat-value"
+                             th:classappend="${entry.value.durataMs > 200 ? 'rank-bad' : 'rank-1'}"
+                             th:text="${entry.value.durataMs} + ' ms'">0 ms</div>
+                    </div>
+                </div>
+
+                <div class="perf-spiegazione" th:text="${entry.value.spiegazione}">Spiegazione</div>
+            </div>
+        </div>
+
+        <!-- Tabella riepilogativa -->
+        <div class="perf-card" style="margin-top: 2rem;">
+            <h3 style="color: #e0e0e0; margin-bottom: 1rem;">📋 Tabella Riepilogativa</h3>
+            <table class="compare">
+                <thead>
+                    <tr>
+                        <th>Strategia</th>
+                        <th>Query SQL</th>
+                        <th>Tempo (ms)</th>
+                        <th>Valutazione</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="entry : ${risultati}">
+                        <td th:text="${entry.value.nomeStrategia}">-</td>
+                        <td th:text="${entry.value.numeroQuery}"
+                            th:classappend="${entry.value.numeroQuery > 5 ? 'rank-bad' : 'rank-1'}">-</td>
+                        <td th:text="${entry.value.durataMs} + ' ms'"
+                            th:classappend="${entry.value.durataMs > 200 ? 'rank-bad' : 'rank-1'}">-</td>
+                        <td th:text="${entry.value.valutazione}">-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Conclusioni -->
+        <div class="conclusion-box">
+            <h3>🎯 Conclusioni e Scelte Implementative</h3>
+            <p>
+                La strategia <strong>LAZY di default</strong> causa il problema <em>N+1 query</em>:
+                per ogni articolo vengono generate query separate per caricare il venditore e le foto.
+                Con <em>N</em> articoli il numero di query è circa <em>1 + 2N</em>, rendendo la vetrina
+                molto lenta al crescere dei dati.
+            </p>
+            <p style="margin-top: 1rem;">
+                Le strategie <strong>JOIN FETCH (JPQL)</strong> e <strong>@EntityGraph</strong> 
+                risolvono il problema eseguendo tutto in una singola query SQL con LEFT JOIN.
+                L'EntityGraph è preferito perché è dichiarativo e non richiede JPQL manuale,
+                mantenendo il repository pulito.
+            </p>
+            <p style="margin-top: 1rem;">
+                <strong style="color: #00e676;">Scelta adottata in produzione:</strong>
+                <code>@EntityGraph(attributePaths = {"venditore", "fotoUrls"})</code>
+                su <code>ArticoloRepository.findAllByOrderByIdDesc()</code> —
+                usata nella vetrina principale di R3Play.
+            </p>
+        </div>
+
+        <div style="margin: 2rem 0; text-align: center;">
+            <a href="/vetrina" class="btn btn-ghost">← Torna alla Vetrina</a>
+        </div>
+    </div>
+</body>
+</html>
