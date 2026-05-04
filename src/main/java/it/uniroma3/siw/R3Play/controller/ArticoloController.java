@@ -35,16 +35,15 @@ public class ArticoloController {
     @Autowired
     private UtenteService utenteService;
 
-    // === ATTRIBUTO GLOBALE: utente loggato disponibile in tutti i template ===
     @ModelAttribute("nomeLoggato")
     public String populateNomeLoggato(@AuthenticationPrincipal Object principal) {
-        Utente u = risolviUtente(principal);
-        return u != null ? buildNome(u) : null;
+        Utente u = utenteService.risolviUtente(principal);
+        return u != null ? utenteService.buildNomeCompleto(u) : null;
     }
 
     @ModelAttribute("emailLoggata")
     public String populateEmailLoggata(@AuthenticationPrincipal Object principal) {
-        Utente u = risolviUtente(principal);
+        Utente u = utenteService.risolviUtente(principal);
         return u != null ? u.getEmail() : null;
     }
 
@@ -53,7 +52,7 @@ public class ArticoloController {
     // =========================================================
     @GetMapping("/")
     public String welcome(@AuthenticationPrincipal Object principal) {
-        return risolviUtente(principal) != null ? "redirect:/vetrina" : "welcome";
+        return utenteService.risolviUtente(principal) != null ? "redirect:/vetrina" : "welcome";
     }
 
     // =========================================================
@@ -71,10 +70,10 @@ public class ArticoloController {
         model.addAttribute("query", query);
         model.addAttribute("risultatiFiltro", query != null && !query.isBlank());
 
-        Utente u = risolviUtente(principal);
+        Utente u = utenteService.risolviUtente(principal);
         if (u != null) {
             model.addAttribute("emailLoggata", u.getEmail());
-            model.addAttribute("nomeLoggato", buildNome(u));
+            model.addAttribute("nomeLoggato", utenteService.buildNomeCompleto(u));
         }
         return "vetrina";
     }
@@ -88,9 +87,9 @@ public class ArticoloController {
         Articolo articolo = articoloService.trovaPerId(id).orElse(null);
         if (articolo == null) return "redirect:/vetrina";
 
-        Utente u = risolviUtente(principal);
+        Utente u = utenteService.risolviUtente(principal);
         model.addAttribute("articolo", articolo);
-        model.addAttribute("nomeLoggato", u != null ? buildNome(u) : "Ospite");
+        model.addAttribute("nomeLoggato", u != null ? utenteService.buildNomeCompleto(u) : "Ospite");
         model.addAttribute("emailLoggata", u != null ? u.getEmail() : null);
         return "dettaglio-articolo";
     }
@@ -108,7 +107,7 @@ public class ArticoloController {
     public String salvaNuovoArticolo(@ModelAttribute Articolo articolo,
                                      @RequestParam("fileImmagine") MultipartFile[] immagini,
                                      @AuthenticationPrincipal Object principal) {
-        Utente venditore = risolviUtente(principal);
+        Utente venditore = utenteService.risolviUtente(principal);
         if (venditore == null) return "redirect:/login";
         articoloService.salvaArticolo(articolo, venditore, immagini);
         return "redirect:/armadio";
@@ -121,7 +120,7 @@ public class ArticoloController {
     public String formModificaArticolo(@PathVariable Long id, Model model,
                                        @AuthenticationPrincipal Object principal) {
         Articolo articolo = articoloService.trovaPerId(id).orElse(null);
-        Utente u = risolviUtente(principal);
+        Utente u = utenteService.risolviUtente(principal);
         if (articolo == null || u == null) return "redirect:/";
         model.addAttribute("articolo", articolo);
         return "modifica-articolo";
@@ -132,7 +131,7 @@ public class ArticoloController {
                                         @ModelAttribute Articolo datiModificati,
                                         @RequestParam("fileImmagine") MultipartFile[] immagini,
                                         @AuthenticationPrincipal Object principal) {
-        Utente u = risolviUtente(principal);
+        Utente u = utenteService.risolviUtente(principal);
         if (u == null) return "redirect:/login";
         try {
             articoloService.modificaArticolo(id, datiModificati, immagini, u);
@@ -147,7 +146,7 @@ public class ArticoloController {
     // =========================================================
     @GetMapping("/articolo/elimina/{id}")
     public String eliminaArticolo(@PathVariable Long id, @AuthenticationPrincipal Object principal) {
-        Utente u = risolviUtente(principal);
+        Utente u = utenteService.risolviUtente(principal);
         if (u == null) return "redirect:/login";
         try {
             articoloService.eliminaArticolo(id, u);
@@ -155,125 +154,5 @@ public class ArticoloController {
             return "redirect:/";
         }
         return "redirect:/armadio";
-    }
-
-    // =========================================================
-    // ARMADIO (profilo privato dell'utente)
-    // =========================================================
-    @GetMapping("/armadio")
-    public String armadio(Model model, @AuthenticationPrincipal Object principal) {
-        Utente u = risolviUtente(principal);
-        if (u == null) return "redirect:/login";
-
-        List<Articolo> mieiArticoli = articoloService.trovaPerVenditore(u);
-        double media = recensioneService.calcolaMediaValutazione(u);
-        long totaleRecensioni = recensioneService.contaRecensioniRicevute(u);
-
-        model.addAttribute("utente", u);
-        model.addAttribute("mieiArticoli", mieiArticoli);
-        model.addAttribute("mediaValutazioni", media);
-        model.addAttribute("totaleRecensioni", totaleRecensioni);
-        model.addAttribute("recensioniRicevute", recensioneService.trovaRecensioniRicevute(u));
-        return "armadio";
-    }
-
-    // =========================================================
-    // PROFILO VENDITORE (pubblico)
-    // =========================================================
-    @GetMapping("/utente/{id}")
-    public String profiloVenditore(@PathVariable Long id, Model model,
-                                   @AuthenticationPrincipal Object principal) {
-        Utente venditore = utenteService.trovaPerId(id).orElse(null);
-        if (venditore == null) return "redirect:/";
-
-        List<Articolo> articoli = articoloService.trovaPerVenditore(venditore);
-        double media = recensioneService.calcolaMediaValutazione(venditore);
-        long totale = recensioneService.contaRecensioniRicevute(venditore);
-
-        model.addAttribute("venditore", venditore);
-        model.addAttribute("articoliVenditore", articoli);
-        model.addAttribute("mediaValutazioni", media);
-        model.addAttribute("totaleRecensioni", totale);
-        model.addAttribute("recensioni", recensioneService.trovaRecensioniRicevute(venditore));
-        model.addAttribute("nuovaRecensione", new Recensione());
-
-        Utente visitatore = risolviUtente(principal);
-        if (visitatore != null) model.addAttribute("utente", visitatore);
-
-        return "profilo-utente";
-    }
-
-    // =========================================================
-    // MODIFICA PROFILO
-    // =========================================================
-    @PostMapping("/utente/modifica")
-    public String modificaProfilo(@RequestParam String nome, @RequestParam String cognome,
-                                  @AuthenticationPrincipal Object principal) {
-        Utente u = risolviUtente(principal);
-        if (u != null) utenteService.aggiornaProfilo(u, nome, cognome);
-        return "redirect:/armadio";
-    }
-
-    // =========================================================
-    // RECENSIONI
-    // =========================================================
-    @PostMapping("/utente/{id}/recensione")
-    public String aggiungiRecensione(@PathVariable Long id,
-                                     @ModelAttribute("nuovaRecensione") Recensione recensione,
-                                     @AuthenticationPrincipal Object principal) {
-        Utente autore = risolviUtente(principal);
-        if (autore == null) return "redirect:/login";
-        try {
-            recensioneService.aggiungiRecensione(id, recensione, autore);
-        } catch (IllegalStateException e) {
-            // Già recensito o auto-recensione: ignoriamo silenziosamente
-        }
-        return "redirect:/utente/" + id;
-    }
-
-    @GetMapping("/recensione/elimina/{id}")
-    public String eliminaRecensione(@PathVariable Long id, @AuthenticationPrincipal Object principal) {
-        Utente u = risolviUtente(principal);
-        if (u == null) return "redirect:/login";
-        try {
-            Long idVenditore = recensioneService.eliminaRecensione(id, u);
-            return "redirect:/utente/" + idVenditore;
-        } catch (SecurityException e) {
-            return "redirect:/";
-        }
-    }
-
-    // =========================================================
-    // METODO HELPER: risolve l'utente dal principal (LOCAL o GOOGLE)
-    // =========================================================
-    private Utente risolviUtente(Object principal) {
-        if (principal == null) return null;
-
-        if (principal instanceof org.springframework.security.oauth2.core.user.OAuth2User oauth) {
-            Object emailAttr = oauth.getAttribute("email");
-            if (emailAttr == null) return null;
-            String email = emailAttr.toString();
-            String nome = getAttr(oauth, "given_name", getAttr(oauth, "name", email.split("@")[0]));
-            String cognome = getAttr(oauth, "family_name", "");
-            return utenteService.recuperaOCreaUtenteGoogle(email, nome, cognome);
-        }
-
-        if (principal instanceof org.springframework.security.core.userdetails.UserDetails ud) {
-            return utenteService.trovaPerEmail(ud.getUsername()).orElse(null);
-        }
-
-        return null;
-    }
-
-    private String getAttr(org.springframework.security.oauth2.core.user.OAuth2User oauth,
-                            String key, String fallback) {
-        Object val = oauth.getAttribute(key);
-        return (val != null && !val.toString().isBlank()) ? val.toString() : fallback;
-    }
-
-    private String buildNome(Utente u) {
-        String n = u.getNome() != null ? u.getNome() : "";
-        String c = u.getCognome() != null ? u.getCognome() : "";
-        return (n + " " + c).trim().isBlank() ? u.getEmail().split("@")[0] : (n + " " + c).trim();
     }
 }

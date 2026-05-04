@@ -71,7 +71,7 @@ public class RecensioneApiController {
             @RequestBody Map<String, Object> body,
             @AuthenticationPrincipal Object principal) {
 
-        Utente autore = risolviUtente(principal);
+        Utente autore = utenteService.risolviUtente(principal);
         if (autore == null) return ResponseEntity.status(401).build();
 
         try {
@@ -106,7 +106,7 @@ public class RecensioneApiController {
             @PathVariable Long id,
             @AuthenticationPrincipal Object principal) {
 
-        Utente u = risolviUtente(principal);
+        Utente u = utenteService.risolviUtente(principal);
         if (u == null) return ResponseEntity.status(401).build();
 
         try {
@@ -123,25 +123,4 @@ public class RecensioneApiController {
         }
     }
 
-    // --- Helper: risolve utente dal principal ---
-    private Utente risolviUtente(Object principal) {
-        if (principal == null) return null;
-        if (principal instanceof org.springframework.security.oauth2.core.user.OAuth2User oauth) {
-            Object emailAttr = oauth.getAttribute("email");
-            if (emailAttr == null) return null;
-            String email = emailAttr.toString();
-            String nome = getAttr(oauth, "given_name", email.split("@")[0]);
-            String cognome = getAttr(oauth, "family_name", "");
-            return utenteService.recuperaOCreaUtenteGoogle(email, nome, cognome);
-        }
-        if (principal instanceof org.springframework.security.core.userdetails.UserDetails ud) {
-            return utenteService.trovaPerEmail(ud.getUsername()).orElse(null);
-        }
-        return null;
-    }
-
-    private String getAttr(org.springframework.security.oauth2.core.user.OAuth2User oauth, String key, String fallback) {
-        Object val = oauth.getAttribute(key);
-        return (val != null && !val.toString().isBlank()) ? val.toString() : fallback;
-    }
 }

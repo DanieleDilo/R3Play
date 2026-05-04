@@ -1,20 +1,16 @@
 package it.uniroma3.siw.R3Play.controller;
 
+import it.uniroma3.siw.R3Play.model.Articolo;
+import it.uniroma3.siw.R3Play.model.Recensione;
+import it.uniroma3.siw.R3Play.model.Utente;
+import it.uniroma3.siw.R3Play.service.ArticoloService;
+import it.uniroma3.siw.R3Play.service.RecensioneService;
+import it.uniroma3.siw.R3Play.service.UtenteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
-import it.uniroma3.siw.R3Play.model.Articolo;
-import it.uniroma3.siw.R3Play.model.Recensione;
-import it.uniroma3.siw.R3Play.model.Utente;
-import it.uniroma3.siw.R3Play.repository.ArticoloRepository;
-import it.uniroma3.siw.R3Play.repository.UserRepository;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,150 +18,110 @@ import java.util.List;
 public class UtenteController {
 
     @Autowired
-    private UserRepository userRepository;
+    private UtenteService utenteService;
 
     @Autowired
-    private ArticoloRepository articoloRepository;
+    private ArticoloService articoloService;
+
+    @Autowired
+    private RecensioneService recensioneService;
 
     @ModelAttribute("nomeLoggato")
     public String populateNomeLoggato(@AuthenticationPrincipal Object principal) {
-        Utente utenteLoggato = getUtenteLoggato(principal);
-        return utenteLoggato != null ? buildNomeCompleto(utenteLoggato) : null;
+        Utente u = utenteService.risolviUtente(principal);
+        return u != null ? utenteService.buildNomeCompleto(u) : null;
     }
 
     @ModelAttribute("emailLoggata")
     public String populateEmailLoggata(@AuthenticationPrincipal Object principal) {
-        Utente utenteLoggato = getUtenteLoggato(principal);
-        return utenteLoggato != null ? utenteLoggato.getEmail() : null;
+        Utente u = utenteService.risolviUtente(principal);
+        return u != null ? u.getEmail() : null;
     }
 
-    // ==========================================
-    // IL MIO ARMADIO (Area Personale)
-    // ==========================================
+    // =========================================================
+    // ARMADIO (profilo privato dell'utente)
+    // =========================================================
     @GetMapping("/armadio")
-    @org.springframework.transaction.annotation.Transactional
-    public String mostraMioArmadio(Model model, @AuthenticationPrincipal Object principal) {
+    public String armadio(Model model, @AuthenticationPrincipal Object principal) {
+        Utente u = utenteService.risolviUtente(principal);
+        if (u == null) return "redirect:/login";
 
-        Utente utenteLoggato = getUtenteLoggato(principal);
-        if (utenteLoggato == null) return "redirect:/login";
+        List<Articolo> mieiArticoli = articoloService.trovaPerVenditore(u);
+        double media = recensioneService.calcolaMediaValutazione(u);
+        long totaleRecensioni = recensioneService.contaRecensioniRicevute(u);
 
-        List<Articolo> mieiArticoli = this.articoloRepository.findByVenditore(utenteLoggato);
-
-        // Nuovo calcolo basato sulle recensioni dell'utente (non dell'articolo)
-        double mediaValutazioni = 0.0;
-        int totaleRecensioni = 0;
-        
-        if (utenteLoggato.getRecensioniRicevute() != null && !utenteLoggato.getRecensioniRicevute().isEmpty()) {
-            totaleRecensioni = utenteLoggato.getRecensioniRicevute().size();
-            int sommaStelle = 0;
-            for (Recensione r : utenteLoggato.getRecensioniRicevute()) {
-                sommaStelle += r.getValutazione();
-            }
-            mediaValutazioni = Math.round(((double) sommaStelle / totaleRecensioni) * 10.0) / 10.0;
-        }
-
-        model.addAttribute("utente", utenteLoggato);
+        model.addAttribute("utente", u);
         model.addAttribute("mieiArticoli", mieiArticoli);
-        model.addAttribute("mediaValutazioni", mediaValutazioni);
-        model.addAttribute("recensioniRicevute", utenteLoggato.getRecensioniRicevute());
-
+        model.addAttribute("mediaValutazioni", media);
+        model.addAttribute("totaleRecensioni", totaleRecensioni);
+        model.addAttribute("recensioniRicevute", recensioneService.trovaRecensioniRicevute(u));
         return "armadio";
     }
 
-    // Metodo helper per ottenere l'utente loggato
-    private Utente getUtenteLoggato(Object principal) {
-        if (principal == null) return null;
+    // =========================================================
+    // PROFILO VENDITORE (pubblico)
+    // =========================================================
+    @GetMapping("/utente/{id}")
+    public String profiloVenditore(@PathVariable Long id, Model model,
+                                   @AuthenticationPrincipal Object principal) {
+        Utente venditore = utenteService.trovaPerId(id).orElse(null);
+        if (venditore == null) return "redirect:/";
 
-        String email = null;
-        String nome = null;
-        String cognome = null;
-        String provider = null;
+        List<Articolo> articoli = articoloService.trovaPerVenditore(venditore);
+        double media = recensioneService.calcolaMediaValutazione(venditore);
+        long totale = recensioneService.contaRecensioniRicevute(venditore);
 
-        if (principal instanceof org.springframework.security.oauth2.core.user.OAuth2User) {
-            org.springframework.security.oauth2.core.user.OAuth2User oauth = (org.springframework.security.oauth2.core.user.OAuth2User) principal;
-            Object emailAttr = oauth.getAttribute("email");
-            email = emailAttr != null ? emailAttr.toString() : null;
-            provider = "GOOGLE";
+        model.addAttribute("venditore", venditore);
+        model.addAttribute("articoliVenditore", articoli);
+        model.addAttribute("mediaValutazioni", media);
+        model.addAttribute("totaleRecensioni", totale);
+        model.addAttribute("recensioni", recensioneService.trovaRecensioniRicevute(venditore));
+        model.addAttribute("nuovaRecensione", new Recensione());
 
-            Object givenName = oauth.getAttribute("given_name");
-            Object familyName = oauth.getAttribute("family_name");
-            Object fullName = oauth.getAttribute("name");
+        Utente visitatore = utenteService.risolviUtente(principal);
+        if (visitatore != null) model.addAttribute("utente", visitatore);
 
-            if (givenName != null) {
-                nome = givenName.toString();
-            }
-            if (familyName != null) {
-                cognome = familyName.toString();
-            }
-            if ((nome == null || nome.isBlank()) && fullName != null) {
-                String[] parts = fullName.toString().trim().split(" ");
-                if (parts.length > 0) {
-                    nome = parts[0];
-                    if (parts.length > 1) {
-                        cognome = parts[parts.length - 1];
-                    }
-                }
-            }
-            if ((nome == null || nome.isBlank()) && email != null) {
-                nome = email.split("@")[0];
-            }
-        } else if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
-            email = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
-        }
-
-        if (email != null) {
-            Utente utente = this.userRepository.findByEmail(email).orElse(null);
-            if (utente == null && "GOOGLE".equals(provider)) {
-                utente = new Utente();
-                utente.setEmail(email);
-                utente.setNome(capitalize(nome != null ? nome : "Utente"));
-                utente.setCognome(capitalize(cognome != null ? cognome : "Google"));
-                utente.setProvider(provider);
-                this.userRepository.save(utente);
-            } else if (utente != null && "GOOGLE".equals(provider)) {
-                boolean dirty = false;
-                if ((utente.getNome() == null || utente.getNome().isBlank()) && nome != null) {
-                    utente.setNome(capitalize(nome));
-                    dirty = true;
-                }
-                if ((utente.getCognome() == null || utente.getCognome().isBlank()) && cognome != null) {
-                    utente.setCognome(capitalize(cognome));
-                    dirty = true;
-                }
-                if (dirty) {
-                    this.userRepository.save(utente);
-                }
-            }
-            return utente;
-        }
-        return null;
+        return "profilo-utente";
     }
 
-    private String buildNomeCompleto(Utente utente) {
-        if (utente == null) return "Ospite";
-        
-        String nome = (utente.getNome() != null) ? utente.getNome() : "";
-        String cognome = (utente.getCognome() != null) ? utente.getCognome() : "";
-        
-        if (nome.isBlank() && cognome.isBlank()) {
-            return utente.getEmail().split("@")[0]; // Fallback sull'email
-        }
-        
-        return (nome + " " + cognome).trim();
+    // =========================================================
+    // MODIFICA PROFILO
+    // =========================================================
+    @PostMapping("/utente/modifica")
+    public String modificaProfilo(@RequestParam String nome, @RequestParam String cognome,
+                                  @AuthenticationPrincipal Object principal) {
+        Utente u = utenteService.risolviUtente(principal);
+        if (u != null) utenteService.aggiornaProfilo(u, nome, cognome);
+        return "redirect:/armadio";
     }
 
-    // Rendi il metodo capitalize resistente ai null
-    private String capitalize(String text) {
-        if (text == null || text.isBlank()) return "Utente"; // Default se manca
-        
-        String[] words = text.trim().split("\\s+");
-        StringBuilder builder = new StringBuilder();
-        for (String word : words) {
-            if (word.isEmpty()) continue;
-            if (builder.length() > 0) builder.append(" ");
-            builder.append(word.substring(0, 1).toUpperCase())
-                   .append(word.substring(1).toLowerCase());
+    // =========================================================
+    // RECENSIONI
+    // =========================================================
+    @PostMapping("/utente/{id}/recensione")
+    public String aggiungiRecensione(@PathVariable Long id,
+                                     @ModelAttribute("nuovaRecensione") Recensione recensione,
+                                     @AuthenticationPrincipal Object principal) {
+        Utente autore = utenteService.risolviUtente(principal);
+        if (autore == null) return "redirect:/login";
+        try {
+            recensioneService.aggiungiRecensione(id, recensione, autore);
+        } catch (IllegalStateException e) {
+            // Già recensito o auto-recensione: ignoriamo silenziosamente
         }
-        return builder.toString();
+        return "redirect:/utente/" + id;
     }
+
+    @GetMapping("/recensione/elimina/{id}")
+    public String eliminaRecensione(@PathVariable Long id, @AuthenticationPrincipal Object principal) {
+        Utente u = utenteService.risolviUtente(principal);
+        if (u == null) return "redirect:/login";
+        try {
+            Long idVenditore = recensioneService.eliminaRecensione(id, u);
+            return "redirect:/utente/" + idVenditore;
+        } catch (SecurityException e) {
+            return "redirect:/";
+        }
+    }
+
 }

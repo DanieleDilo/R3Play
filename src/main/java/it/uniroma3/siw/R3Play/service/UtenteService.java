@@ -107,8 +107,53 @@ public class UtenteService {
     }
 
     // =============================================
+    // HELPER GLOBALI (Risoluzione utente da Principal)
+    // =============================================
+
+    /**
+     * Risolve l'utente loggato a partire dal Principal di Spring Security.
+     * Funziona sia con login locale (UserDetails) che con Google OAuth2.
+     */
+    @Transactional
+    public Utente risolviUtente(Object principal) {
+        if (principal == null) return null;
+
+        if (principal instanceof org.springframework.security.oauth2.core.user.OAuth2User oauth) {
+            Object emailAttr = oauth.getAttribute("email");
+            if (emailAttr == null) return null;
+            String email = emailAttr.toString();
+            String nome = getAttr(oauth, "given_name", getAttr(oauth, "name", email.split("@")[0]));
+            String cognome = getAttr(oauth, "family_name", "");
+            return recuperaOCreaUtenteGoogle(email, nome, cognome);
+        }
+
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails ud) {
+            return trovaPerEmail(ud.getUsername()).orElse(null);
+        }
+
+        return null;
+    }
+
+    /**
+     * Costruisce il nome completo da mostrare nell'interfaccia.
+     * Se l'utente non ha nome/cognome, usa la prima parte dell'email.
+     */
+    public String buildNomeCompleto(Utente u) {
+        if (u == null) return "Ospite";
+        String n = u.getNome() != null ? u.getNome() : "";
+        String c = u.getCognome() != null ? u.getCognome() : "";
+        String fullName = (n + " " + c).trim();
+        return fullName.isBlank() ? u.getEmail().split("@")[0] : fullName;
+    }
+
+    // =============================================
     // HELPER PRIVATI
     // =============================================
+
+    private String getAttr(org.springframework.security.oauth2.core.user.OAuth2User oauth, String key, String fallback) {
+        Object val = oauth.getAttribute(key);
+        return (val != null && !val.toString().isBlank()) ? val.toString() : fallback;
+    }
 
     private String capitalize(String text) {
         if (text == null || text.isBlank()) return "Utente";
