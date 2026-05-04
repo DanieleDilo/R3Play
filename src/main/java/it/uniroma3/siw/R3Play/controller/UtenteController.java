@@ -72,62 +72,6 @@ public class UtenteController {
         return "armadio";
     }
 
-    // ==========================================
-    // MODIFICA PROFILO UTENTE
-    // ==========================================
-    @PostMapping("/utente/modifica")
-    public String modificaProfiloUtente(@RequestParam("nome") String nome, 
-                                        @RequestParam("cognome") String cognome, 
-                                        @AuthenticationPrincipal Object principal) {
-        
-        Utente utente = getUtenteLoggato(principal);
-        
-        if (utente != null) {
-            utente.setNome(nome);
-            utente.setCognome(cognome);
-            this.userRepository.save(utente);
-        }
-        
-        return "redirect:/armadio";
-    }
-
-    // ==========================================
-    // PROFILO PUBBLICO VENDITORE
-    // ==========================================
-    @GetMapping("/utente/{id}")
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public String mostraProfiloVenditore(@PathVariable("id") Long id, Model model, @AuthenticationPrincipal Object principal) {
-        
-        Utente venditore = this.userRepository.findById(id).orElse(null);
-        if (venditore == null) return "redirect:/";
-
-        List<Articolo> articoliVenditore = this.articoloRepository.findByVenditore(venditore);
-
-        double mediaValutazioni = 0.0;
-        int totaleRecensioni = 0;
-        if (venditore.getRecensioniRicevute() != null && !venditore.getRecensioniRicevute().isEmpty()) {
-            totaleRecensioni = venditore.getRecensioniRicevute().size();
-            int sommaStelle = 0;
-            for (Recensione r : venditore.getRecensioniRicevute()) {
-                sommaStelle += r.getValutazione();
-            }
-            mediaValutazioni = Math.round(((double) sommaStelle / totaleRecensioni) * 10.0) / 10.0;
-        }
-
-        model.addAttribute("venditore", venditore);
-        model.addAttribute("articoliVenditore", articoliVenditore);
-        model.addAttribute("mediaValutazioni", mediaValutazioni);
-        model.addAttribute("totaleRecensioni", totaleRecensioni);
-        model.addAttribute("nuovaRecensione", new Recensione()); 
-
-        Utente visitatore = getUtenteLoggato(principal);
-        if (visitatore != null) {
-            model.addAttribute("utente", visitatore);
-        }
-
-        return "profilo-utente";
-    }
-
     // Metodo helper per ottenere l'utente loggato
     private Utente getUtenteLoggato(Object principal) {
         if (principal == null) return null;

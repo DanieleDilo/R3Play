@@ -4,9 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 
 import it.uniroma3.siw.R3Play.model.Recensione;
 import it.uniroma3.siw.R3Play.model.Utente;
@@ -21,28 +19,6 @@ public class RecensioneController {
 
     @Autowired
     private UserRepository userRepository;
-
-    // ==========================================
-    // AGGIUNGI RECENSIONE (AL VENDITORE)
-    // ==========================================
-    @PostMapping("/utente/{id}/recensione")
-    public String aggiungiRecensioneUtente(@PathVariable("id") Long idVenditore, 
-                                           @ModelAttribute("nuovaRecensione") Recensione recensione,
-                                           @AuthenticationPrincipal Object principal) {
-
-        Utente destinatario = this.userRepository.findById(idVenditore).orElse(null);
-        Utente autore = getUtenteLoggato(principal);
-
-        // Controlliamo che entrambi esistano e che l'autore non stia recensendo se stesso
-        if (destinatario != null && autore != null && !destinatario.getId().equals(autore.getId())) {
-            recensione.setId(null);
-            recensione.setAutore(autore);
-            recensione.setDestinatario(destinatario);
-            this.recensioneRepository.save(recensione);
-        }
-
-        return "redirect:/utente/" + idVenditore; // Torna al profilo appena recensito
-    }
 
     // ==========================================
     // ELIMINA RECENSIONE
