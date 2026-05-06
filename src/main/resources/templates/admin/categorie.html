@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestione Categorie - Admin R3Play</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="fade-in">
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a th:href="@{/}" class="logo">R3Play Admin</a>
+            <div class="nav-actions">
+                <a th:href="@{/vetrina}" class="btn btn-ghost">Vetrina</a>
+                <a th:href="@{/armadio}" class="btn btn-ghost">Il Mio Armadio</a>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="logout-button">Esci</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <section class="section">
+        <div class="container">
+            <div class="hero">
+                <h1 class="hero-title">Gestione Categorie</h1>
+                <p class="hero-subtitle">Crea e gestisci le categorie degli articoli</p>
+            </div>
+
+            <div class="card" style="max-width: 600px; margin: 0 auto; margin-bottom: 2rem;">
+                <div class="card-content">
+                    <form th:action="@{/admin/categoria}" th:object="${nuovaCategoria}" method="POST">
+                        <div class="form-group">
+                            <label for="nome" class="form-label">Nome Categoria</label>
+                            <input type="text" id="nome" th:field="*{nome}" placeholder="Es. Racchette, Scarpe..." required class="form-input">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Aggiungi Categoria</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card" style="max-width: 800px; margin: 0 auto;">
+                <div class="card-content">
+                    <h2 class="section-title">Categorie Esistenti</h2>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th style="text-align: right;">Azioni</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="cat : ${categorie}">
+                                <td th:text="${cat.id}"></td>
+                                <td th:text="${cat.nome}"></td>
+                                <td style="text-align: right;">
+                                    <form th:action="@{/admin/categoria/elimina/{id}(id=${cat.id})}" method="post" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Sei sicuro di voler eliminare questa categoria?')">Elimina</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(categorie)}">
+                                <td colspan="3" style="text-align: center; color: var(--text-muted);">Nessuna categoria presente.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

@@ -10,13 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/**
- * Service layer per la gestione delle recensioni.
- * Implementa le regole di business:
- * - Un utente non può recensire se stesso
- * - Un utente può avere una sola recensione per venditore
- * - Solo l'autore o un ADMIN può eliminare una recensione
- */
 @Service
 public class RecensioneService {
 
@@ -25,10 +18,6 @@ public class RecensioneService {
 
     @Autowired
     private UserRepository userRepository;
-
-    // =============================================
-    // OPERAZIONI DI LETTURA
-    // =============================================
 
     @Transactional(readOnly = true)
     public List<Recensione> trovaRecensioniRicevute(Utente venditore) {
@@ -47,16 +36,6 @@ public class RecensioneService {
         return recensioneRepository.findByDestinatario(venditore).size();
     }
 
-    // =============================================
-    // OPERAZIONI DI SCRITTURA
-    // =============================================
-
-    /**
-     * Aggiunge una recensione a un venditore.
-     * Regole di business:
-     * 1. L'autore non può recensire se stesso
-     * 2. Non si può recensire due volte lo stesso venditore
-     */
     @Transactional
     public Recensione aggiungiRecensione(Long idVenditore, Recensione recensione, Utente autore) {
         Utente destinatario = userRepository.findById(idVenditore)
@@ -70,18 +49,13 @@ public class RecensioneService {
             throw new IllegalStateException("Hai già recensito questo venditore.");
         }
 
-        recensione.setId(null); // Forza creazione nuova
+        recensione.setId(null);
         recensione.setAutore(autore);
         recensione.setDestinatario(destinatario);
 
         return recensioneRepository.save(recensione);
     }
 
-    /**
-     * Elimina una recensione.
-     * Solo l'autore o un ADMIN può eliminarla.
-     * Restituisce l'ID del destinatario per il redirect.
-     */
     @Transactional
     public Long eliminaRecensione(Long id, Utente utenteLoggato) {
         Recensione recensione = recensioneRepository.findById(id)

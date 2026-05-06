@@ -24,6 +24,10 @@ public class Articolo {
     @ManyToOne
     private Utente venditore;
 
+    @ManyToOne
+    @JoinColumn(name = "categoria_id")
+    private Categoria categoria;
+
 
     public Long getId() {
         return id;
@@ -86,6 +90,14 @@ public class Articolo {
 
     public void setVenditore(Utente venditore) {
         this.venditore = venditore;
+    }
+
+    public Categoria getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
     }
 
 }

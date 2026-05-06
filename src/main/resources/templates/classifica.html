@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classifica Venditori - R3Play</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .leaderboard-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .leaderboard-row:last-child {
+            border-bottom: none;
+        }
+        .rank {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            width: 40px;
+        }
+        .user-info {
+            flex-grow: 1;
+            padding-left: 1rem;
+        }
+        .user-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+        .user-name:hover {
+            color: var(--accent-color);
+        }
+        .user-stats {
+            text-align: right;
+        }
+        .star-rating {
+            color: #FFD700;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body class="fade-in">
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a th:href="@{/}" class="logo">R3Play</a>
+            <div class="nav-actions">
+                <a th:href="@{/vetrina}" class="btn btn-ghost">Vetrina</a>
+                <a th:href="@{/armadio}" class="btn btn-secondary">Il Mio Armadio</a>
+                <form th:if="${nomeLoggato != null}" th:action="@{/logout}" method="post">
+                    <button type="submit" class="logout-button">Esci</button>
+                </form>
+                <a th:if="${nomeLoggato == null}" th:href="@{/login}" class="btn btn-primary">Accedi</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="section">
+        <div class="container">
+            <div class="hero">
+                <h1 class="hero-title">Classifica Venditori</h1>
+                <p class="hero-subtitle">I migliori venditori basati sulle recensioni</p>
+            </div>
+
+            <div class="card" style="max-width: 800px; margin: 0 auto;">
+                <div class="card-content">
+                    <div th:each="utente, iterStat : ${classifica}" class="leaderboard-row">
+                        <div class="rank" th:text="${'#' + iterStat.count}">#1</div>
+                        <div class="user-info">
+                            <a th:href="@{'/utente/' + ${utente.id}}" class="user-name" th:text="${utente.nome + ' ' + utente.cognome}">Nome Utente</a>
+                            <div style="font-size: 0.875rem; color: var(--text-muted);" th:text="${utente.email}">email@example.com</div>
+                        </div>
+                        <div class="user-stats">
+                            <div class="star-rating">
+                                ★ <span th:text="${medie[utente.id]}">0.0</span>
+                            </div>
+                            <div style="font-size: 0.875rem; color: var(--text-muted);">
+                                <span th:text="${totali[utente.id]}">0</span> recensioni
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div th:if="${#lists.isEmpty(classifica)}" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                        Nessun venditore presente in classifica.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>
