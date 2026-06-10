@@ -27,7 +27,7 @@ function RecensioneCard({ rec, emailUtente, ruoloUtente, onElimina }) {
                 <div>
                     <Stelle valore={rec.valutazione} />
                     <strong style={{ color: '#ccc', fontSize: '0.9rem', marginLeft: '0.5rem' }}>
-                        da <span style={{ color: '#00e676' }}>{rec.autore}</span>
+                        da <span style={{ color: '#ff6b35' }}>{rec.autore}</span>
                     </strong>
                 </div>
                 {puoElimina && (
@@ -88,7 +88,7 @@ function FormRecensione({ venditoreId, onAggiunta }) {
 
     return (
         <div className="form-box" style={{ marginTop: '2rem' }}>
-            <h3 style={{ color: '#00e676', marginBottom: '1.2rem' }}>Lascia un feedback</h3>
+            <h3 style={{ color: '#ff6b35', marginBottom: '1.2rem' }}>Lascia un feedback</h3>
             {errore && <p style={{ color: '#ff5050', marginBottom: '0.8rem' }}>⚠️ {errore}</p>}
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
@@ -158,7 +158,7 @@ function RecensioniApp() {
 
     return (
         <div>
-            <h2 style={{ color: '#00e676', marginBottom: '1.5rem', textAlign: 'center' }}>
+            <h2 style={{ color: '#ff6b35', marginBottom: '1.5rem', textAlign: 'center' }}>
                 Cosa dicono di {venditoreNome}
             </h2>
 
@@ -183,7 +183,7 @@ function RecensioniApp() {
 
             {!canReview && !emailUtente && (
                 <p style={{ textAlign:'center', marginTop:'1.5rem', color:'#888' }}>
-                    <a href="/login" style={{ color:'#00e676' }}>Accedi</a> per lasciare un feedback.
+                    <a href="/login" style={{ color:'#00dee6' }}>Accedi</a> per lasciare un feedback.
                 </p>
             )}
         </div>
