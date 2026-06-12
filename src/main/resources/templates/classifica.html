@@ -73,14 +73,10 @@
                         <div class="rank" th:text="${'#' + iterStat.count}">#1</div>
                         <div class="user-info">
                             <a th:href="@{'/utente/' + ${utente.id}}" class="user-name" th:text="${utente.nome + ' ' + utente.cognome}">Nome Utente</a>
-                            <div style="font-size: 0.875rem; color: var(--text-muted);" th:text="${utente.email}">email@example.com</div>
                         </div>
                         <div class="user-stats">
                             <div class="star-rating">
                                 ★ <span th:text="${medie[utente.id]}">0.0</span>
-                            </div>
-                            <div style="font-size: 0.875rem; color: var(--text-muted);">
-                                <span th:text="${totali[utente.id]}">0</span> recensioni
                             </div>
                         </div>
                     </div>

@@ -48,14 +48,12 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
                                 <th>Nome</th>
                                 <th style="text-align: right;">Azioni</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr th:each="cat : ${categorie}">
-                                <td th:text="${cat.id}"></td>
                                 <td th:text="${cat.nome}"></td>
                                 <td style="text-align: right;">
                                     <form th:action="@{/admin/categoria/elimina/{id}(id=${cat.id})}" method="post" style="display:inline;">

@@ -19,7 +19,7 @@
                 <div sec:authorize="isAuthenticated()">
                     <a th:href="@{/classifica}" class="btn btn-ghost">Classifica</a>
                     <a th:href="@{/armadio}" class="btn btn-ghost">Il Mio Armadio</a>
-                    <a sec:authorize="hasAuthority('ROLE_ADMIN')" th:href="@{/admin/categorie}" class="btn btn-ghost" style="color: #4CAF50;">Gestione Categorie</a>
+                    <a sec:authorize="hasAuthority('ROLE_ADMIN')" th:href="@{/admin/categorie}" class="btn btn-ghost" style="color: #ffffff;">Gestione Categorie</a>
                     <form th:action="@{/logout}" method="post" style="display: inline;">
                         <button type="submit" class="btn btn-ghost">Esci</button>
                     </form>
