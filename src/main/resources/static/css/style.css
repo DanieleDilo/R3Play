@@ -216,6 +216,44 @@ button {
     color: white;
 }
 
+.btn-danger {
+    background: #ff4d4d;
+    color: white;
+    border-color: #ff4d4d;
+}
+
+.btn-danger:hover {
+    background: #ff3333;
+    border-color: #ff3333;
+    color: white;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    min-height: 32px;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.data-table th, .data-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.data-table th {
+    background: rgba(255, 255, 255, 0.05);
+    font-weight: 600;
+}
+
 /* Container e layout */
 .container {
     max-width: 1200px;

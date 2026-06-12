@@ -14,15 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * REST API CONTROLLER — Recensioni
- *
- * Fornisce endpoint JSON per il componente React delle recensioni.
- * Usa @RestController (ritorna JSON) invece di @Controller (ritorna viste Thymeleaf).
- *
- * Questo è il punto di integrazione tra il backend Spring Boot
- * e il frontend React (requisito §9 del progetto).
- */
 @RestController
 @RequestMapping("/api/recensioni")
 public class RecensioneApiController {
@@ -33,11 +24,6 @@ public class RecensioneApiController {
     @Autowired
     private UtenteService utenteService;
 
-    /**
-     * GET /api/recensioni/{idVenditore}
-     * Restituisce tutte le recensioni di un venditore in formato JSON.
-     * Usato dal componente React per caricare le recensioni.
-     */
     @GetMapping("/{idVenditore}")
     public ResponseEntity<List<Map<String, Object>>> getRecensioni(@PathVariable Long idVenditore) {
         Utente venditore = utenteService.trovaPerId(idVenditore).orElse(null);
@@ -61,10 +47,6 @@ public class RecensioneApiController {
         return ResponseEntity.ok(dto);
     }
 
-    /**
-     * POST /api/recensioni/{idVenditore}
-     * Aggiunge una nuova recensione (chiamata dal componente React).
-     */
     @PostMapping("/{idVenditore}")
     public ResponseEntity<Map<String, Object>> aggiungiRecensione(
             @PathVariable Long idVenditore,
@@ -97,10 +79,6 @@ public class RecensioneApiController {
         }
     }
 
-    /**
-     * DELETE /api/recensioni/{id}
-     * Elimina una recensione (solo l'autore o ADMIN).
-     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, Object>> eliminaRecensione(
             @PathVariable Long id,
@@ -122,5 +100,4 @@ public class RecensioneApiController {
             return ResponseEntity.notFound().build();
         }
     }
-
 }

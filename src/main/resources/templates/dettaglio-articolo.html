@@ -12,7 +12,19 @@
         <div class="navbar-content">
             <a th:href="@{/}" class="logo">R3Play</a>
             <div class="nav-actions">
-                <a th:href="@{/}" class="btn btn-outline">Torna alla Vetrina</a>
+                <div sec:authorize="isAnonymous()">
+                    <a th:href="@{/login}" class="btn btn-secondary">Accedi</a>
+                    <a th:href="@{/registrati}" class="btn btn-ghost">Registrati</a>
+                </div>
+                <div sec:authorize="isAuthenticated()" style="display: flex; gap: 10px;">
+                    <a th:href="@{/vetrina}" class="btn btn-ghost">Vetrina</a>
+                    <a th:href="@{/classifica}" class="btn btn-ghost">Classifica</a>
+                    <a th:href="@{/armadio}" class="btn btn-secondary">Il Mio Armadio</a>
+                    <a sec:authorize="hasAuthority('ROLE_ADMIN')" th:href="@{/admin/categorie}" class="btn btn-ghost" style="color: #4CAF50;">Categorie</a>
+                    <form th:action="@{/logout}" method="post" style="display: inline; margin: 0;">
+                        <button type="submit" class="logout-button">Esci</button>
+                    </form>
+                </div>
             </div>
         </div>
     </nav>

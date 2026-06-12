@@ -46,6 +46,11 @@ public class UtenteService {
         return userRepository.findByNomeOrCognomeContainingIgnoreCase(testo);
     }
 
+    @Transactional(readOnly = true)
+    public java.util.List<Object[]> ottieniClassifica() {
+        return userRepository.findUtentiConMediaRecensioni();
+    }
+
     // =============================================
     // OPERAZIONI DI SCRITTURA
     // =============================================

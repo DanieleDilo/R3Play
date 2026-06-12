@@ -1,10 +1,9 @@
 package it.uniroma3.siw.R3Play.controller;
 
 import it.uniroma3.siw.R3Play.model.Articolo;
-import it.uniroma3.siw.R3Play.model.Recensione;
 import it.uniroma3.siw.R3Play.model.Utente;
 import it.uniroma3.siw.R3Play.service.ArticoloService;
-import it.uniroma3.siw.R3Play.service.RecensioneService;
+import it.uniroma3.siw.R3Play.service.CategoriaService;
 import it.uniroma3.siw.R3Play.service.UtenteService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-/**
- * CONTROLLER LAYER — Articoli
- *
- * Responsabilità: gestire le richieste HTTP e delegare la logica ai Service.
- * NON contiene logica di business (niente if/else su regole di dominio qui).
- * NON accede direttamente ai Repository.
- */
 @Controller
 public class ArticoloController {
 
@@ -30,10 +22,10 @@ public class ArticoloController {
     private ArticoloService articoloService;
 
     @Autowired
-    private RecensioneService recensioneService;
+    private UtenteService utenteService;
 
     @Autowired
-    private UtenteService utenteService;
+    private CategoriaService categoriaService;
 
     @ModelAttribute("nomeLoggato")
     public String populateNomeLoggato(@AuthenticationPrincipal Object principal) {
@@ -47,17 +39,11 @@ public class ArticoloController {
         return u != null ? u.getEmail() : null;
     }
 
-    // =========================================================
-    // WELCOME / SPLASH
-    // =========================================================
     @GetMapping("/")
     public String welcome(@AuthenticationPrincipal Object principal) {
         return utenteService.risolviUtente(principal) != null ? "redirect:/vetrina" : "welcome";
     }
 
-    // =========================================================
-    // VETRINA (lista articoli)
-    // =========================================================
     @GetMapping("/vetrina")
     public String vetrina(@RequestParam(name = "q", required = false) String query,
                           Model model, @AuthenticationPrincipal Object principal) {
@@ -83,9 +69,6 @@ public class ArticoloController {
         return "vetrina";
     }
 
-    // =========================================================
-    // DETTAGLIO ARTICOLO
-    // =========================================================
     @GetMapping("/articolo/{id}")
     public String dettaglioArticolo(@PathVariable Long id, Model model,
                                     @AuthenticationPrincipal Object principal) {
@@ -99,12 +82,10 @@ public class ArticoloController {
         return "dettaglio-articolo";
     }
 
-    // =========================================================
-    // NUOVO ARTICOLO
-    // =========================================================
     @GetMapping("/articolo/nuovo")
     public String formNuovoArticolo(Model model) {
         model.addAttribute("articolo", new Articolo());
+        model.addAttribute("categorie", categoriaService.trovaTutte());
         return "nuovo-articolo";
     }
 
@@ -118,9 +99,6 @@ public class ArticoloController {
         return "redirect:/armadio";
     }
 
-    // =========================================================
-    // MODIFICA ARTICOLO
-    // =========================================================
     @GetMapping("/articolo/modifica/{id}")
     public String formModificaArticolo(@PathVariable Long id, Model model,
                                        @AuthenticationPrincipal Object principal) {
@@ -128,6 +106,7 @@ public class ArticoloController {
         Utente u = utenteService.risolviUtente(principal);
         if (articolo == null || u == null) return "redirect:/";
         model.addAttribute("articolo", articolo);
+        model.addAttribute("categorie", categoriaService.trovaTutte());
         return "modifica-articolo";
     }
 
@@ -146,9 +125,6 @@ public class ArticoloController {
         return "redirect:/armadio";
     }
 
-    // =========================================================
-    // ELIMINA ARTICOLO
-    // =========================================================
     @GetMapping("/articolo/elimina/{id}")
     public String eliminaArticolo(@PathVariable Long id, @AuthenticationPrincipal Object principal) {
         Utente u = utenteService.risolviUtente(principal);

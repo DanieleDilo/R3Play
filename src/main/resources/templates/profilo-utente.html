@@ -17,7 +17,10 @@
                     <a th:href="@{/registrati}" class="btn btn-outline">Registrati</a>
                 </div>
                 <div sec:authorize="isAuthenticated()" style="display: flex; gap: 10px;">
+                    <a th:href="@{/}" class="btn btn-outline">Vetrina</a>
+                    <a th:href="@{/classifica}" class="btn btn-outline">Classifica</a>
                     <a th:href="@{/armadio}" class="btn btn-outline">Il Mio Armadio</a>
+                    <a sec:authorize="hasAuthority('ROLE_ADMIN')" th:href="@{/admin/categorie}" class="btn btn-outline" style="color: #4CAF50;">Categorie</a>
                     <form th:action="@{/logout}" method="post" style="display: inline; margin: 0;">
                         <button type="submit" class="btn btn-outline">Esci</button>
                     </form>

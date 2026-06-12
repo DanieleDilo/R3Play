@@ -17,8 +17,9 @@
                     <a th:href="@{/registrati}" class="btn btn-ghost">Registrati</a>
                 </div>
                 <div sec:authorize="isAuthenticated()">
+                    <a th:href="@{/classifica}" class="btn btn-ghost">Classifica</a>
                     <a th:href="@{/armadio}" class="btn btn-ghost">Il Mio Armadio</a>
-                    <a sec:authorize="hasAuthority('ROLE_ADMIN')" th:href="@{/admin/performance}" class="btn btn-ghost" style="color: #ffd700;">📊 Performance</a>
+                    <a sec:authorize="hasAuthority('ROLE_ADMIN')" th:href="@{/admin/categorie}" class="btn btn-ghost" style="color: #4CAF50;">Gestione Categorie</a>
                     <form th:action="@{/logout}" method="post" style="display: inline;">
                         <button type="submit" class="btn btn-ghost">Esci</button>
                     </form>
@@ -88,6 +89,7 @@
                     <p class="product-price" th:text="${#numbers.formatDecimal(articolo.prezzo, 1, 2)} + ' €'">0.00 €</p>
                     <p class="product-description compact-description" th:text="${articolo.descrizione}">Descrizione breve...</p>
                     <div class="product-meta">
+                        <span th:if="${articolo.categoria != null}" class="badge" th:text="${articolo.categoria.nome}" style="background: rgba(255, 107, 53, 0.2); color: var(--primary); padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Categoria</span>
                         <span th:if="${articolo.venditore != null}" th:text="'Venditore: ' + ${articolo.venditore.nome}"></span>
                         <a th:href="@{'/articolo/' + ${articolo.id}}" class="btn-link">Visualizza</a>
                     </div>

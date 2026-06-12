@@ -1,12 +1,13 @@
 package it.uniroma3.siw.R3Play.authentication;
 
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
+import it.uniroma3.siw.R3Play.model.Categoria;
 import it.uniroma3.siw.R3Play.model.Utente;
+import it.uniroma3.siw.R3Play.repository.CategoriaRepository;
 import it.uniroma3.siw.R3Play.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 
 @Component
 public class AdminInitializer implements CommandLineRunner {
@@ -15,22 +16,33 @@ public class AdminInitializer implements CommandLineRunner {
     private UserRepository userRepository;
 
     @Autowired
+    private CategoriaRepository categoriaRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
-        // Controlla se l'admin esiste già nel DB
-        if (userRepository.findByEmail("admin@email.it").isEmpty()) {
+        // Inizializzazione Admin se non esiste
+        if (!userRepository.existsByEmail("admin@r3play.it")) {
             Utente admin = new Utente();
-            admin.setNome("Amministratore");
-            admin.setCognome("Sistema");
-            admin.setEmail("admin@email.it");
-            admin.setPassword(passwordEncoder.encode("Admin"));
-            admin.setProvider("LOCAL");
+            admin.setNome("Admin");
+            admin.setCognome("R3Play");
+            admin.setEmail("admin@r3play.it");
+            admin.setPassword(passwordEncoder.encode("admin"));
             admin.setRuolo("ROLE_ADMIN");
-            
+            admin.setProvider("LOCAL");
             userRepository.save(admin);
-            System.out.println("Utente Admin creato con successo. Email: admin@email.it | Password: Admin");
+        }
+
+        // Inizializzazione categorie predefinite se vuoto
+        if (categoriaRepository.count() == 0) {
+            String[] nomiCategorie = {"Calcio", "Tennis", "Nuoto", "Basket", "Palestra", "Ciclismo"};
+            for (String nome : nomiCategorie) {
+                Categoria c = new Categoria();
+                c.setNome(nome);
+                categoriaRepository.save(c);
+            }
         }
     }
 }
