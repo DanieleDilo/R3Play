@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="it" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vetrina - R3Play</title>
     <link rel="stylesheet" href="/css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
 </head>
+
 <body class="fade-in">
     <nav class="navbar">
         <div class="navbar-content">
@@ -19,7 +22,8 @@
                 <div sec:authorize="isAuthenticated()">
                     <a th:href="@{/classifica}" class="btn btn-ghost">Classifica</a>
                     <a th:href="@{/armadio}" class="btn btn-ghost">Il Mio Armadio</a>
-                    <a sec:authorize="hasAuthority('ROLE_ADMIN')" th:href="@{/admin/categorie}" class="btn btn-ghost" style="color: #ffffff;">Gestione Categorie</a>
+                    <a sec:authorize="hasAuthority('ROLE_ADMIN')" th:href="@{/admin/categorie}" class="btn btn-ghost"
+                        style="color: #ffffff;">Gestione Categorie</a>
                     <form th:action="@{/logout}" method="post" style="display: inline;">
                         <button type="submit" class="btn btn-ghost">Esci</button>
                     </form>
@@ -29,10 +33,13 @@
     </nav>
 
     <section class="page-hero compact-hero">
-        <h1 class="section-title" th:if="${nomeLoggato != null}" th:text="'Bentornato, ' + ${nomeLoggato}">Bentornato, atleta!</h1>
+        <h1 class="section-title" th:if="${nomeLoggato != null}" th:text="'Bentornato, ' + ${nomeLoggato}">Bentornato,
+            atleta!</h1>
         <h1 class="section-title" th:unless="${nomeLoggato != null}">Esplora la Vetrina Sportiva</h1>
-        <p style="color: var(--text-light); font-size: 1.1rem; max-width: 700px; margin: 0 auto 2rem; line-height: 1.6;">
-            Scopri l'attrezzatura sportiva perfetta per te. Da appassionati per appassionati: trova le migliori occasioni o vendi ciò che non usi più.
+        <p
+            style="color: var(--text-light); font-size: 1.1rem; max-width: 700px; margin: 0 auto 2rem; line-height: 1.6;">
+            Scopri l'attrezzatura sportiva perfetta per te. Da appassionati per appassionati: trova le migliori
+            occasioni o vendi ciò che non usi più.
         </p>
         <div sec:authorize="isAuthenticated()" class="hero-actions-bottom">
             <a th:href="@{/articolo/nuovo}" class="btn btn-primary">Vendi</a>
@@ -40,15 +47,18 @@
     </section>
 
     <div class="container" style="max-width: 920px;">
-        
+
         <form th:action="@{/vetrina}" method="get" class="search-form-elegant">
             <div class="search-input-wrapper">
                 <span class="search-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15.7955 15.8111L21 21M18 10.5C18 14.6421 14.6421 18 10.5 18C6.35786 18 3 14.6421 3 10.5C3 6.35786 6.35786 3 10.5 3C14.6421 3 18 6.35786 18 10.5Z" stroke="#aaaaaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path
+                            d="M15.7955 15.8111L21 21M18 10.5C18 14.6421 14.6421 18 10.5 18C6.35786 18 3 14.6421 3 10.5C3 6.35786 6.35786 3 10.5 3C14.6421 3 18 6.35786 18 10.5Z"
+                            stroke="#aaaaaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                 </span>
-                <input type="text" name="q" placeholder="Cerca articoli o utenti..." th:value="${query}" class="search-input-field">
+                <input type="text" name="q" placeholder="Cerca articoli o utenti..." th:value="${query}"
+                    class="search-input-field">
             </div>
             <button type="submit" class="search-button-pill">Cerca</button>
         </form>
@@ -57,45 +67,64 @@
         </div>
 
         <div th:if="${not #lists.isEmpty(utentiTrovati)}" class="utenti-results mb-5" style="margin-bottom: 3.5rem;">
-            <h3 style="color: var(--primary); margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.8rem; font-size: 1.4rem; text-align: center;">Utenti Trovati</h3>
+            <h3
+                style="color: var(--primary); margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.8rem; font-size: 1.4rem; text-align: center;">
+                Utenti Trovati</h3>
             <div style="display: flex; flex-direction: column; gap: 1rem; max-width: 650px; margin: 0 auto;">
-                <div th:each="u : ${utentiTrovati}" 
-                     style="display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1.5rem; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 50px; transition: all 0.3s ease;" 
-                     onmouseover="this.style.background='rgba(255,255,255,0.08)'; this.style.borderColor='rgba(255,255,255,0.2)';" 
-                     onmouseout="this.style.background='rgba(255,255,255,0.04)'; this.style.borderColor='var(--border)';">
+                <div th:each="u : ${utentiTrovati}"
+                    style="display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1.5rem; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 50px; transition: all 0.3s ease;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.08)'; this.style.borderColor='rgba(255,255,255,0.2)';"
+                    onmouseout="this.style.background='rgba(255,255,255,0.04)'; this.style.borderColor='var(--border)';">
                     <div style="display: flex; align-items: center; gap: 1.2rem;">
-                        <div style="width: 40px; height: 40px; background: linear-gradient(45deg, var(--primary), var(--accent)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
-                            <span th:text="${u.nome != null ? #strings.substring(u.nome,0,1) : 'U'} + ${u.cognome != null and !#strings.isEmpty(u.cognome) ? #strings.substring(u.cognome,0,1) : ''}">U</span>
+                        <div
+                            style="width: 40px; height: 40px; background: linear-gradient(45deg, var(--primary), var(--accent)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                            <span
+                                th:text="${u.nome != null ? #strings.substring(u.nome,0,1) : 'U'} + ${u.cognome != null and !#strings.isEmpty(u.cognome) ? #strings.substring(u.cognome,0,1) : ''}">U</span>
                         </div>
-                        <h4 style="margin: 0; color: #fff; font-size: 1.1rem; font-weight: 500;" th:text="${u.nome + ' ' + (u.cognome ?: '')}">Nome</h4>
+                        <h4 style="margin: 0; color: #fff; font-size: 1.1rem; font-weight: 500;"
+                            th:text="${u.nome + ' ' + (u.cognome ?: '')}">Nome</h4>
                     </div>
-                    <a th:href="@{'/utente/' + ${u.id}}" 
-                       class="btn-outline" 
-                       style="padding: 0.4rem 1.2rem; font-size: 0.8rem; border-radius: 30px; border: 1px solid rgba(255,255,255,0.2); color: white; transition: all 0.3s;" 
-                       onmouseover="this.style.background='var(--primary)'; this.style.borderColor='var(--primary)'; this.style.color='var(--secondary)';" 
-                       onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(255,255,255,0.2)'; this.style.color='white';">Profilo</a>
+                    <a th:href="@{'/utente/' + ${u.id}}" class="btn-outline"
+                        style="padding: 0.4rem 1.2rem; font-size: 0.8rem; border-radius: 30px; border: 1px solid rgba(255,255,255,0.2); color: white; transition: all 0.3s;"
+                        onmouseover="this.style.background='var(--primary)'; this.style.borderColor='var(--primary)'; this.style.color='var(--secondary)';"
+                        onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(255,255,255,0.2)'; this.style.color='white';">Profilo</a>
                 </div>
             </div>
         </div>
 
-        <h3 th:if="${risultatiFiltro and not #lists.isEmpty(articoli)}" style="color: var(--primary-neon); margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Articoli Trovati</h3>
+        <h3 th:if="${risultatiFiltro and not #lists.isEmpty(articoli)}"
+            style="color: var(--primary-neon); margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+            Articoli Trovati</h3>
 
         <div class="grid compact-grid" th:if="${not #lists.isEmpty(articoli)}">
             <div class="product-card compact-card" th:each="articolo : ${articoli}">
-                <img th:if="${articolo.urlFoto != null}" th:src="${articolo.urlFoto}" alt="Foto Articolo" class="product-image compact-image">
-                <div th:unless="${articolo.urlFoto != null}" class="product-image compact-image placeholder-image">📷 Nessuna Foto</div>
+                <img th:if="${articolo.urlFoto != null}" th:src="${articolo.urlFoto}" alt="Foto Articolo"
+                    class="product-image compact-image">
+                <div th:unless="${articolo.urlFoto != null}" class="product-image compact-image placeholder-image">📷
+                    Nessuna Foto</div>
                 <div class="product-content compact-content">
                     <h3 class="product-title" th:text="${articolo.nome}">Nome Articolo</h3>
-                    <p class="product-price" th:text="${#numbers.formatDecimal(articolo.prezzo, 1, 2)} + ' €'">0.00 €</p>
-                    <p class="product-description compact-description" th:text="${articolo.descrizione}">Descrizione breve...</p>
+                    <p class="product-price" th:text="${#numbers.formatDecimal(articolo.prezzo, 1, 2)} + ' €'">0.00 €
+                    </p>
+                    <p class="product-description compact-description" th:text="${articolo.descrizione}">Descrizione
+                        breve...</p>
                     <div class="product-meta">
-                        <span th:if="${articolo.categoria != null}" class="badge" th:text="${articolo.categoria.nome}" style="background: rgba(255, 107, 53, 0.2); color: var(--primary); padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Categoria</span>
-                        <span th:if="${articolo.venditore != null}" th:text="'Venditore: ' + ${articolo.venditore.nome}"></span>
+                        <span th:if="${articolo.categoria != null}" class="badge" th:text="${articolo.categoria.nome}"
+                            style="background: rgba(255, 107, 53, 0.2); color: var(--primary); padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Categoria</span>
+                        <span th:if="${articolo.venditore != null}"
+                            th:text="'Venditore: ' + ${articolo.venditore.nome}"></span>
                         <a th:href="@{'/articolo/' + ${articolo.id}}" class="btn-link">Visualizza</a>
                     </div>
-                    <div th:if="${(emailLoggata != null and articolo.venditore != null and emailLoggata == articolo.venditore.email) or #authorization.expression('hasAuthority(''ROLE_ADMIN'')')}" class="mt-3" style="display:flex; gap: 10px;">
-                        <a th:href="@{'/articolo/modifica/' + ${articolo.id}}" class="btn btn-secondary compact-btn" style="flex:1; text-align:center;">Modifica</a>
-                        <a th:href="@{'/articolo/elimina/' + ${articolo.id}}" class="btn btn-outline compact-btn" style="flex:1; border-color: #ff4d4d; color: #ff4d4d; text-align:center;" onclick="return confirm('Eliminare questo annuncio?')">Elimina</a>
+                    <div th:if="${(emailLoggata != null and articolo.venditore != null and emailLoggata == articolo.venditore.email) or #authorization.expression('hasAuthority(''ROLE_ADMIN'')')}"
+                        class="mt-3" style="display:flex; gap: 10px;">
+                        <a th:href="@{'/articolo/modifica/' + ${articolo.id}}" class="btn btn-secondary compact-btn"
+                            style="flex:1; text-align:center;">Modifica</a>
+                        <form th:action="@{'/articolo/elimina/' + ${articolo.id}}" method="post"
+                            style="flex:1; display:inline;">
+                            <button type="submit" class="btn btn-outline compact-btn"
+                                style="width:100%; border-color: #ff4d4d; color: #ff4d4d;"
+                                onclick="return confirm('Eliminare questo annuncio?')">Elimina</button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -104,9 +133,11 @@
         <div th:if="${#lists.isEmpty(articoli)}" class="text-center empty-state">
             <h3>Non ci sono articoli disponibili</h3>
             <p th:if="${risultatiFiltro}">Nessun articolo trovato per questa ricerca.</p>
-            <p th:unless="${risultatiFiltro}">Sii il primo a pubblicare un annuncio e dai il via alla community sportiva!</p>
+            <p th:unless="${risultatiFiltro}">Sii il primo a pubblicare un annuncio e dai il via alla community
+                sportiva!</p>
             <a th:href="@{/articolo/nuovo}" class="btn btn-primary">Pubblica il primo articolo</a>
         </div>
     </div>
 </body>
+
 </html>

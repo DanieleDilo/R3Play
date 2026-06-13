@@ -58,7 +58,7 @@ public class ArticoloService {
     }
 
     @Transactional
-    public Articolo modificaArticolo(Long id, Articolo datiModificati, MultipartFile[] immagini, Utente utenteLoggato) {
+    public Articolo modificaArticolo(Long id, Articolo datiModificati, Utente utenteLoggato) {
         Articolo articolo = articoloRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Articolo non trovato: " + id));
 
@@ -70,8 +70,6 @@ public class ArticoloService {
         articolo.setDescrizione(datiModificati.getDescrizione());
         articolo.setPrezzo(datiModificati.getPrezzo());
         articolo.setCategoria(datiModificati.getCategoria());
-
-        gestisciUploadImmagini(articolo, immagini);
 
         return articoloRepository.save(articolo);
     }
@@ -89,13 +87,15 @@ public class ArticoloService {
     }
 
     private boolean isProprietarioOAdmin(Articolo articolo, Utente utente) {
-        if ("ROLE_ADMIN".equals(utente.getRuolo())) return true;
+        if ("ROLE_ADMIN".equals(utente.getRuolo()))
+            return true;
         return articolo.getVenditore() != null
                 && utente.getEmail().equals(articolo.getVenditore().getEmail());
     }
 
     private void gestisciUploadImmagini(Articolo articolo, MultipartFile[] immagini) {
-        if (immagini == null || immagini.length == 0) return;
+        if (immagini == null || immagini.length == 0)
+            return;
         try {
             Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
             if (!Files.exists(uploadPath)) {

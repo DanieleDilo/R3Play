@@ -977,3 +977,8 @@ ol li {
     color: #ffd700;
     background: var(--secondary);
 }
+
+Select option{
+    background-color: #1e1e2e;
+    color: #ffffff;
+}

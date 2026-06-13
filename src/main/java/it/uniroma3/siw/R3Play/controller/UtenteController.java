@@ -112,7 +112,7 @@ public class UtenteController {
         return "redirect:/utente/" + id;
     }
 
-    @GetMapping("/recensione/elimina/{id}")
+    @PostMapping("/recensione/elimina/{id}")
     public String eliminaRecensione(@PathVariable Long id, @AuthenticationPrincipal Object principal) {
         Utente u = utenteService.risolviUtente(principal);
         if (u == null) return "redirect:/login";

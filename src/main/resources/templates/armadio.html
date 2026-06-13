@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="it" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Il Mio Armadio - R3Play</title>
     <link rel="stylesheet" href="/css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
 </head>
+
 <body class="fade-in">
     <nav class="navbar">
         <div class="navbar-content">
@@ -19,7 +22,8 @@
                 <div sec:authorize="isAuthenticated()" style="display: flex; gap: 10px;">
                     <a th:href="@{/}" class="btn btn-outline">Vetrina</a>
                     <a th:href="@{/classifica}" class="btn btn-outline">Classifica</a>
-                    <a sec:authorize="hasAuthority('ROLE_ADMIN')" th:href="@{/admin/categorie}" class="btn btn-outline" style="color: #ffffff;">Categorie</a>
+                    <a sec:authorize="hasAuthority('ROLE_ADMIN')" th:href="@{/admin/categorie}" class="btn btn-outline"
+                        style="color: #ffffff;">Categorie</a>
                     <form th:action="@{/logout}" method="post" style="display: inline; margin: 0;">
                         <button type="submit" class="btn btn-outline">Esci</button>
                     </form>
@@ -31,7 +35,7 @@
     <section class="page-hero compact-hero">
         <h1 class="section-title" th:text="'Ciao, ' + ${utente.nome}">Ciao, Daniele!</h1>
         <p style="color: var(--text-dim);">La tua dashboard personale</p>
-        
+
         <div class="stats-row fade-in delay-1">
             <div class="stat-item">
                 <span class="stat-value" th:text="${mediaValutazioni}">0.0</span>
@@ -45,21 +49,31 @@
     </section>
 
     <div class="container">
-        
-        <h2 style="margin-bottom: 1.5rem; text-align: center; color: var(--primary-neon);" class="fade-in delay-1">I tuoi Annunci</h2>
+
+        <h2 style="margin-bottom: 1.5rem; text-align: center; color: var(--primary-neon);" class="fade-in delay-1">I
+            tuoi Annunci</h2>
 
         <div class="grid compact-grid fade-in delay-2" th:if="${not #lists.isEmpty(mieiArticoli)}">
             <div class="product-card compact-card" th:each="art : ${mieiArticoli}">
-                <img th:if="${art.urlFoto != null}" th:src="@{${art.urlFoto}}" alt="Foto Articolo" class="product-image compact-image">
-                <div th:unless="${art.urlFoto != null}" class="product-image compact-image" style="display:flex; align-items:center; justify-content:center; background:#1e1e1e;">📷 Nessuna Foto</div>
-                
+                <img th:if="${art.urlFoto != null}" th:src="@{${art.urlFoto}}" alt="Foto Articolo"
+                    class="product-image compact-image">
+                <div th:unless="${art.urlFoto != null}" class="product-image compact-image"
+                    style="display:flex; align-items:center; justify-content:center; background:#1e1e1e;">📷 Nessuna
+                    Foto</div>
+
                 <div class="product-content compact-content">
                     <h3 class="product-title" th:text="${art.nome}">Nome Articolo</h3>
                     <p class="product-price" th:text="${#numbers.formatDecimal(art.prezzo, 1, 2)} + ' €'">0.00 €</p>
                     <p class="product-description compact-description" th:text="${art.descrizione}">Descrizione...</p>
                     <div class="product-meta" style="display:flex; gap: 10px; margin-top: auto;">
-                        <a th:href="@{'/articolo/modifica/' + ${art.id}}" class="btn btn-outline compact-btn" style="flex:1;">Modifica</a>
-                        <a th:href="@{'/articolo/elimina/' + ${art.id}}" class="btn btn-outline compact-btn" style="flex:1; border-color: #ffffff; color: #ffffff;" onclick="return confirm('Eliminare questo annuncio?')">Elimina</a>
+                        <a th:href="@{'/articolo/modifica/' + ${art.id}}" class="btn btn-outline compact-btn"
+                            style="flex:1;">Modifica</a>
+                        <form th:action="@{'/articolo/elimina/' + ${art.id}}" method="post"
+                            style="flex:1; display:inline;">
+                            <button type="submit" class="btn btn-outline compact-btn"
+                                style="width:100%; border-color: #ffffff; color: #ffffff;"
+                                onclick="return confirm('Eliminare questo annuncio?')">Elimina</button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -74,35 +88,41 @@
         <div class="reviews-section fade-in delay-3" style="margin-top: 4rem;">
             <h2 style="margin-bottom: 1.5rem; text-align: center; color: var(--primary-neon);">Le tue recensioni</h2>
             <div th:if="${recensioniRicevute != null and !#lists.isEmpty(recensioniRicevute)}">
-                <div class="review-card" th:each="rec : ${recensioniRicevute}" style="background: var(--surface); border-radius: var(--radius-md); border: 1px solid var(--border); box-shadow: var(--shadow); padding: 1.5rem; margin-bottom: 1rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <div class="review-card" th:each="rec : ${recensioniRicevute}"
+                    style="background: var(--surface); border-radius: var(--radius-md); border: 1px solid var(--border); box-shadow: var(--shadow); padding: 1.5rem; margin-bottom: 1rem;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <span style="color: #ffd700; font-size: 1.1rem; display: inline-flex; gap: 0.15rem;" th:each="i : ${#numbers.sequence(1, rec.valutazione)}">★</span>
-                            <span style="color: var(--text-light); font-size: 0.95rem;">Recensione di <strong th:text="${rec.autore != null ? rec.autore.nome + ' ' + rec.autore.cognome : 'Utente'}">Utente</strong></span>
+                            <span style="color: #ffd700; font-size: 1.1rem; display: inline-flex; gap: 0.15rem;"
+                                th:each="i : ${#numbers.sequence(1, rec.valutazione)}">★</span>
+                            <span style="color: var(--text-light); font-size: 0.95rem;">Recensione di <strong
+                                    th:text="${rec.autore != null ? rec.autore.nome + ' ' + rec.autore.cognome : 'Utente'}">Utente</strong></span>
                         </div>
                     </div>
                     <p style="color: var(--text); line-height: 1.6;" th:text="${rec.testo}">Testo recensione...</p>
                 </div>
             </div>
-            <div th:unless="${recensioniRicevute != null and !#lists.isEmpty(recensioniRicevute)}" style="text-align: center; color: var(--text-dim); padding: 2rem; border: 1px dashed var(--border); border-radius: var(--radius-md);">
+            <div th:unless="${recensioniRicevute != null and !#lists.isEmpty(recensioniRicevute)}"
+                style="text-align: center; color: var(--text-dim); padding: 2rem; border: 1px dashed var(--border); border-radius: var(--radius-md);">
                 Nessuna recensione ricevuta ancora. Chiedi ai tuoi clienti di lasciarne una dopo l'acquisto!
             </div>
         </div>
 
         <div class="form-box fade-in delay-3" style="margin-top: 5rem;">
             <h2 style="margin-bottom: 2rem; text-align: center; color: var(--text-main);">⚙️ Impostazioni Profilo</h2>
-            
+
             <form th:action="@{/utente/modifica}" method="POST">
                 <div class="form-group">
                     <label class="form-label" for="nome">Il tuo Nome</label>
                     <input type="text" id="nome" name="nome" class="form-input" th:value="${utente.nome}" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label" for="cognome">Il tuo Cognome</label>
-                    <input type="text" id="cognome" name="cognome" class="form-input" th:value="${utente.cognome}" required>
+                    <input type="text" id="cognome" name="cognome" class="form-input" th:value="${utente.cognome}"
+                        required>
                 </div>
-                
+
                 <div style="text-align: center; margin-top: 2rem;">
                     <button type="submit" class="btn btn-primary">Salva Modifiche</button>
                 </div>
@@ -110,7 +130,8 @@
         </div>
 
     </div>
-    
+
     <br><br><br>
 </body>
+
 </html>

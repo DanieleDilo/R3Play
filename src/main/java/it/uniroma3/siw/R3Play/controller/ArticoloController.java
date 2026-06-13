@@ -46,7 +46,7 @@ public class ArticoloController {
 
     @GetMapping("/vetrina")
     public String vetrina(@RequestParam(name = "q", required = false) String query,
-                          Model model, @AuthenticationPrincipal Object principal) {
+            Model model, @AuthenticationPrincipal Object principal) {
 
         List<Articolo> articoli = (query != null && !query.isBlank())
                 ? articoloService.cercaPerTesto(query)
@@ -71,9 +71,10 @@ public class ArticoloController {
 
     @GetMapping("/articolo/{id}")
     public String dettaglioArticolo(@PathVariable Long id, Model model,
-                                    @AuthenticationPrincipal Object principal) {
+            @AuthenticationPrincipal Object principal) {
         Articolo articolo = articoloService.trovaPerId(id).orElse(null);
-        if (articolo == null) return "redirect:/vetrina";
+        if (articolo == null)
+            return "redirect:/vetrina";
 
         Utente u = utenteService.risolviUtente(principal);
         model.addAttribute("articolo", articolo);
@@ -91,20 +92,22 @@ public class ArticoloController {
 
     @PostMapping("/articolo/nuovo")
     public String salvaNuovoArticolo(@ModelAttribute Articolo articolo,
-                                     @RequestParam("fileImmagine") MultipartFile[] immagini,
-                                     @AuthenticationPrincipal Object principal) {
+            @RequestParam("fileImmagine") MultipartFile[] immagini,
+            @AuthenticationPrincipal Object principal) {
         Utente venditore = utenteService.risolviUtente(principal);
-        if (venditore == null) return "redirect:/login";
+        if (venditore == null)
+            return "redirect:/login";
         articoloService.salvaArticolo(articolo, venditore, immagini);
         return "redirect:/armadio";
     }
 
     @GetMapping("/articolo/modifica/{id}")
     public String formModificaArticolo(@PathVariable Long id, Model model,
-                                       @AuthenticationPrincipal Object principal) {
+            @AuthenticationPrincipal Object principal) {
         Articolo articolo = articoloService.trovaPerId(id).orElse(null);
         Utente u = utenteService.risolviUtente(principal);
-        if (articolo == null || u == null) return "redirect:/";
+        if (articolo == null || u == null)
+            return "redirect:/";
         model.addAttribute("articolo", articolo);
         model.addAttribute("categorie", categoriaService.trovaTutte());
         return "modifica-articolo";
@@ -112,23 +115,24 @@ public class ArticoloController {
 
     @PostMapping("/articolo/modifica/{id}")
     public String salvaModificaArticolo(@PathVariable Long id,
-                                        @ModelAttribute Articolo datiModificati,
-                                        @RequestParam("fileImmagine") MultipartFile[] immagini,
-                                        @AuthenticationPrincipal Object principal) {
+            @ModelAttribute Articolo datiModificati,
+            @AuthenticationPrincipal Object principal) {
         Utente u = utenteService.risolviUtente(principal);
-        if (u == null) return "redirect:/login";
+        if (u == null)
+            return "redirect:/login";
         try {
-            articoloService.modificaArticolo(id, datiModificati, immagini, u);
+            articoloService.modificaArticolo(id, datiModificati, u);
         } catch (SecurityException e) {
             return "redirect:/";
         }
         return "redirect:/armadio";
     }
 
-    @GetMapping("/articolo/elimina/{id}")
+    @PostMapping("/articolo/elimina/{id}")
     public String eliminaArticolo(@PathVariable Long id, @AuthenticationPrincipal Object principal) {
         Utente u = utenteService.risolviUtente(principal);
-        if (u == null) return "redirect:/login";
+        if (u == null)
+            return "redirect:/login";
         try {
             articoloService.eliminaArticolo(id, u);
         } catch (SecurityException e) {
