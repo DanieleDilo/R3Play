@@ -29,8 +29,10 @@ public interface ArticoloRepository extends JpaRepository<Articolo, Long> {
            "OR LOWER(a.descrizione) LIKE LOWER(CONCAT('%', :q, '%'))")
     List<Articolo> searchConVenditore(@Param("q") String query);
 
+
     long countByVenditore(Utente venditore);
 
     @EntityGraph(attributePaths = {"venditore", "fotoUrls"})
     Optional<Articolo> findWithDetailById(Long id);
+
 }

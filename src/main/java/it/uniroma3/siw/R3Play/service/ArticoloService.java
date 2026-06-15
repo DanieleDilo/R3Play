@@ -30,10 +30,12 @@ public class ArticoloService {
         return articoloRepository.findAllByOrderByIdDesc();
     }
 
+
     @Transactional(readOnly = true)
     public List<Articolo> cercaPerTesto(String query) {
         return articoloRepository.searchConVenditore(query);
     }
+
 
     @Transactional(readOnly = true)
     public List<Articolo> trovaPerVenditore(Utente venditore) {
