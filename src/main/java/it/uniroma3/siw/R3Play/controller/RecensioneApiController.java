@@ -79,6 +79,40 @@ public class RecensioneApiController {
         }
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> modificaRecensione(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body,
+            @AuthenticationPrincipal Object principal) {
+
+        Utente autore = utenteService.risolviUtente(principal);
+        if (autore == null) return ResponseEntity.status(401).build();
+
+        try {
+            Recensione aggiornata = new Recensione();
+            aggiornata.setTesto((String) body.get("testo"));
+            Object valObj = body.get("valutazione");
+            aggiornata.setValutazione(valObj instanceof Integer ? (Integer) valObj : ((Number) valObj).intValue());
+
+            Recensione salvata = recensioneService.modificaRecensione(id, aggiornata, autore);
+
+            Map<String, Object> resp = new HashMap<>();
+            resp.put("id",          salvata.getId());
+            resp.put("testo",       salvata.getTesto());
+            resp.put("valutazione", salvata.getValutazione());
+            resp.put("autore",      autore.getNome() + " " + autore.getCognome());
+            resp.put("autoreEmail", autore.getEmail());
+            return ResponseEntity.ok(resp);
+
+        } catch (SecurityException e) {
+            Map<String, Object> err = new HashMap<>();
+            err.put("errore", "Non autorizzato");
+            return ResponseEntity.status(403).body(err);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, Object>> eliminaRecensione(
             @PathVariable Long id,

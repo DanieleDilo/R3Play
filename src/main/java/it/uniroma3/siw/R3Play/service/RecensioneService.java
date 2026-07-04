@@ -45,10 +45,6 @@ public class RecensioneService {
             throw new IllegalStateException("Non puoi recensire te stesso.");
         }
 
-        if (recensioneRepository.existsByAutoreAndDestinatario(autore, destinatario)) {
-            throw new IllegalStateException("Hai già recensito questo venditore.");
-        }
-
         recensione.setId(null);
         recensione.setAutore(autore);
         recensione.setDestinatario(destinatario);
@@ -72,5 +68,23 @@ public class RecensioneService {
         Long idVenditore = recensione.getDestinatario().getId();
         recensioneRepository.delete(recensione);
         return idVenditore;
+    }
+
+    @Transactional
+    public Recensione modificaRecensione(Long id, Recensione recensioneAggiornata, Utente utenteLoggato) {
+        Recensione recensione = recensioneRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Recensione non trovata: " + id));
+
+        boolean isAutore = recensione.getAutore() != null
+                && utenteLoggato.getEmail().equals(recensione.getAutore().getEmail());
+
+        if (!isAutore) {
+            throw new SecurityException("Non hai i permessi per modificare questa recensione.");
+        }
+
+        recensione.setValutazione(recensioneAggiornata.getValutazione());
+        recensione.setTesto(recensioneAggiornata.getTesto());
+
+        return recensioneRepository.save(recensione);
     }
 }

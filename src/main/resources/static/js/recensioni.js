@@ -16,10 +16,89 @@ function Stelle({ valore }) {
 }
 
 // Singola card di recensione
-function RecensioneCard({ rec, emailUtente, ruoloUtente, onElimina }) {
+function RecensioneCard({ rec, emailUtente, ruoloUtente, onElimina, onModifica }) {
     const isAutore  = emailUtente && rec.autoreEmail === emailUtente;
     const isAdmin   = ruoloUtente === 'ROLE_ADMIN';
     const puoElimina = isAutore || isAdmin;
+
+    const [isEditing, setIsEditing] = useState(false);
+    const [valutazione, setValutazione] = useState(rec.valutazione);
+    const [testo, setTesto] = useState(rec.testo);
+    const [errore, setErrore] = useState(null);
+    const [invio, setInvio] = useState(false);
+
+    const handleSave = async (e) => {
+        e.preventDefault();
+        setInvio(true);
+        setErrore(null);
+        try {
+            const root = document.getElementById('recensioni-root');
+            const csrfToken = root.dataset.csrfToken;
+            const csrfHeader = root.dataset.csrfHeader;
+
+            const headers = { 'Content-Type': 'application/json' };
+            if (csrfToken && csrfHeader) {
+                headers[csrfHeader] = csrfToken;
+            }
+
+            const resp = await fetch(`/api/recensioni/${rec.id}`, {
+                method: 'PUT',
+                headers: headers,
+                body: JSON.stringify({ valutazione: parseInt(valutazione), testo })
+            });
+            const data = await resp.json();
+            if (!resp.ok) {
+                setErrore(data.errore || 'Errore durante il salvataggio.');
+            } else {
+                setIsEditing(false);
+                onModifica(data);
+            }
+        } catch (err) {
+            setErrore('Errore di rete.');
+        } finally {
+            setInvio(false);
+        }
+    };
+
+    if (isEditing) {
+        return (
+            <div className="review-card" style={{ marginBottom: '1.2rem' }}>
+                <form onSubmit={handleSave}>
+                    <h4 style={{ color: '#ff6b35', marginBottom: '0.8rem' }}>Modifica la tua recensione</h4>
+                    {errore && <p style={{ color: '#ff5050', marginBottom: '0.8rem' }}>⚠️ {errore}</p>}
+                    
+                    <div className="form-group" style={{ marginBottom: '0.8rem' }}>
+                        <label className="form-label" style={{ fontSize: '0.85rem' }}>Valutazione</label>
+                        <select value={valutazione} onChange={e => setValutazione(e.target.value)}
+                                className="form-input" style={{ background: 'rgba(0,0,0,0.5)', padding: '0.4rem' }} required>
+                            <option value="5">⭐⭐⭐⭐⭐ Eccellente</option>
+                            <option value="4">⭐⭐⭐⭐ Buono</option>
+                            <option value="3">⭐⭐⭐ Normale</option>
+                            <option value="2">⭐⭐ Scarso</option>
+                            <option value="1">⭐ Pessimo</option>
+                        </select>
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: '0.8rem' }}>
+                        <label className="form-label" style={{ fontSize: '0.85rem' }}>Commento</label>
+                        <textarea value={testo} onChange={e => setTesto(e.target.value)}
+                                  className="form-input" rows="3" style={{ padding: '0.4rem' }} required />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button type="submit" className="btn btn-primary" style={{ padding: '0.4rem 1rem', fontSize: '0.85rem' }} disabled={invio}>
+                            {invio ? 'Salvataggio...' : 'Salva'}
+                        </button>
+                        <button type="button" className="btn btn-outline" 
+                                onClick={() => { setIsEditing(false); setValutazione(rec.valutazione); setTesto(rec.testo); setErrore(null); }}
+                                style={{ padding: '0.4rem 1rem', fontSize: '0.85rem' }} disabled={invio}>
+                            Annulla
+                        </button>
+                    </div>
+                </form>
+            </div>
+        );
+    }
 
     return (
         <div className="review-card" style={{ marginBottom: '1.2rem' }}>
@@ -30,15 +109,24 @@ function RecensioneCard({ rec, emailUtente, ruoloUtente, onElimina }) {
                         da <span style={{ color: '#ff6b35' }}>{rec.autore}</span>
                     </strong>
                 </div>
-                {puoElimina && (
-                    <button
-                        onClick={() => {
-                            if (window.confirm('Eliminare questo feedback?')) onElimina(rec.id);
-                        }}
-                        style={{ background:'none', border:'none', color:'#ff5050', cursor:'pointer', fontSize:'0.85rem', textDecoration:'underline' }}>
-                        Elimina
-                    </button>
-                )}
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    {isAutore && (
+                        <button
+                            onClick={() => setIsEditing(true)}
+                            style={{ background:'none', border:'none', color:'#00dee6', cursor:'pointer', fontSize:'0.85rem', textDecoration:'underline' }}>
+                            Modifica
+                        </button>
+                    )}
+                    {puoElimina && (
+                        <button
+                            onClick={() => {
+                                if (window.confirm('Eliminare questo feedback?')) onElimina(rec.id);
+                            }}
+                            style={{ background:'none', border:'none', color:'#ff5050', cursor:'pointer', fontSize:'0.85rem', textDecoration:'underline' }}>
+                            Elimina
+                        </button>
+                    )}
+                </div>
             </div>
             <p style={{ color: '#ddd', marginTop: '0.6rem', lineHeight: 1.6 }}>{rec.testo}</p>
         </div>
@@ -156,6 +244,10 @@ function RecensioniApp() {
         setRecensioni(prev => [nuova, ...prev]);
     };
 
+    const handleModifica = (recensioneAggiornata) => {
+        setRecensioni(prev => prev.map(r => r.id === recensioneAggiornata.id ? recensioneAggiornata : r));
+    };
+
     return (
         <div>
             <h2 style={{ color: '#ff6b35', marginBottom: '1.5rem', textAlign: 'center' }}>
@@ -173,7 +265,7 @@ function RecensioniApp() {
                 recensioni.map(rec => (
                     <RecensioneCard key={rec.id} rec={rec}
                         emailUtente={emailUtente} ruoloUtente={ruoloUtente}
-                        onElimina={handleElimina} />
+                        onElimina={handleElimina} onModifica={handleModifica} />
                 ))
             )}
 
