@@ -18,9 +18,6 @@ public interface RecensioneRepository extends JpaRepository<Recensione, Long> {
     // Tutte le recensioni scritte da un utente (autore)
     List<Recensione> findByAutore(Utente autore);
 
-    // Controlla se un utente ha già recensito un altro utente (no duplicati)
-    boolean existsByAutoreAndDestinatario(Utente autore, Utente destinatario);
-
     // Media valutazione ricevuta da un venditore
     @Query("SELECT AVG(r.valutazione) FROM Recensione r WHERE r.destinatario = :utente")
     Optional<Double> calcolaMediaValutazione(@Param("utente") Utente utente);

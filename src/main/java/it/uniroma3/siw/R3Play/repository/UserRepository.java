@@ -13,5 +13,7 @@ public interface UserRepository extends JpaRepository<Utente, Long> {
     java.util.List<Utente> findByNomeOrCognomeContainingIgnoreCase(@org.springframework.data.repository.query.Param("testo") String testo);
 
     @org.springframework.data.jpa.repository.Query("SELECT u, AVG(r.valutazione), COUNT(r) FROM Utente u LEFT JOIN u.recensioniRicevute r GROUP BY u ORDER BY AVG(r.valutazione) DESC NULLS LAST")
-    java.util.List<Object[]> findUtentiConMediaRecensioni();
+    java.util.List<Object[]> findUtentiConMediaRecensioniByOrderByNomeAsc();
+
+    
 }

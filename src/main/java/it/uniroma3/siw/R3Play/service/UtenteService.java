@@ -48,7 +48,7 @@ public class UtenteService {
 
     @Transactional(readOnly = true)
     public java.util.List<Object[]> ottieniClassifica() {
-        return userRepository.findUtentiConMediaRecensioni();
+        return userRepository.findUtentiConMediaRecensioniByOrderByNomeAsc();
     }
 
     // =============================================

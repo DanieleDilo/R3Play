@@ -107,7 +107,7 @@ public class UtenteController {
         try {
             recensioneService.aggiungiRecensione(id, recensione, autore);
         } catch (IllegalStateException e) {
-            // Già recensito o auto-recensione: ignoriamo silenziosamente
+            // Auto-recensione: ignoriamo silenziosamente
         }
         return "redirect:/utente/" + id;
     }

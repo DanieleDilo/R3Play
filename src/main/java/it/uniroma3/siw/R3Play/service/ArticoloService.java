@@ -118,4 +118,14 @@ public class ArticoloService {
             throw new RuntimeException("Errore durante l'upload dell'immagine: " + e.getMessage(), e);
         }
     }
+
+    @Transactional(readOnly = true)
+    public List<Articolo> findAllByPrezzoDesc() {
+        return articoloRepository.findAllByOrderByPrezzoDesc();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Articolo> findByCategoriaId(Long categoriaId) {
+        return articoloRepository.findByCategoriaId(categoriaId);
+    }
 }

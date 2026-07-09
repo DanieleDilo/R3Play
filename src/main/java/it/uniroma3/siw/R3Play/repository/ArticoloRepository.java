@@ -35,4 +35,8 @@ public interface ArticoloRepository extends JpaRepository<Articolo, Long> {
     @EntityGraph(attributePaths = {"venditore", "fotoUrls"})
     Optional<Articolo> findWithDetailById(Long id);
 
+    List<Articolo> findAllByOrderByPrezzoDesc();
+
+    List<Articolo> findByCategoriaId(Long categoriaId);
+
 }
